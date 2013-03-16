@@ -4,12 +4,23 @@
 __PocketMine Plugin__
 name=Development Tools
 description=A collection of tools so development for PocketMine-MP is easier
-version=0.1dev
+version=0.1
 author=shoghicp
 class=DevTools
 apiversion=4
 */
 
+/*
+
+Small Changelog
+===============
+
+0.1:
+- PocketMine-MP Alpha_1.2.1 release
+
+
+*/
+		
 class DevTools implements Plugin{
 	public static $compileHeader = <<<HEADER
 <?php
