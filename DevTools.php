@@ -159,6 +159,15 @@ HEADER;
 					case T_OPEN_TAG:
 					case T_CLOSE_TAG:
 					case T_INLINE_HTML:
+					case T_BAD_CHARACTER:
+						break;
+					case T_LOGICAL_AND:
+						$code .= "&&";
+						$lastspace = false;
+						break;
+					case T_LOGICAL_OR:
+						$code .= "||";
+						$lastspace = false;
 						break;
 					case T_WHITESPACE:
 						switch(str_replace("\t", "", $tag[1])){
@@ -224,6 +233,15 @@ HEADER;
 						case T_OPEN_TAG:
 						case T_CLOSE_TAG:
 						case T_INLINE_HTML:
+						case T_BAD_CHARACTER:
+							break;
+						case T_LOGICAL_AND:
+							$code .= "&&";
+							$lastspace = false;
+							break;
+						case T_LOGICAL_OR:
+							$code .= "||";
+							$lastspace = false;
 							break;
 						case T_WHITESPACE:
 							switch(str_replace("\t", "", $tag[1])){
