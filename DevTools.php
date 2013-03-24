@@ -7,7 +7,7 @@ description=A collection of tools so development for PocketMine-MP is easier
 version=0.1
 author=shoghicp
 class=DevTools
-apiversion=4
+apiversion=5
 */
 
 /*
@@ -17,6 +17,10 @@ Small Changelog
 
 0.1:
 - PocketMine-MP Alpha_1.2.1 release
+
+0.2:
+- PocketMine-MP Alpha_1.2.2 release
+- Code obfuscation
 
 
 */
@@ -126,11 +130,29 @@ HEADER;
 		$code = "";
 		$lastspace = true;
 		$src = token_get_all("<?php ".$info["code"]);
+		$variables = array(
+			'$this' => '$this',
+		);
 		foreach($src as $index => $tag){
 			if(!is_array($tag)){
 				$code .= $tag;
 			}else{
 				switch($tag[0]){
+					case T_VARIABLE:
+						if(!isset($variables[$tag[1]])){
+							$cnt = 1;
+							while(true){
+								$v = '$'.chr(mt_rand(97, 122)).Utils::strToHex(Utils::getRandomBytes($cnt, false));
+								if(!in_array($v, $variables, true)){
+									$variables[$tag[1]] = $v;
+									break;
+								}
+								++$cnt;
+							}
+						}
+						$code .= $variables[$tag[1]];
+						$lastspace = false;
+						break;
 					case T_COMMENT:
 					case T_DOC_COMMENT:
 					case T_OPEN_TAG:
@@ -158,6 +180,7 @@ HEADER;
 		}
 		$code = gzdeflate($code, 9);
 		$pmf->write($code);
+		$output .= "The PMF version of the plugin has been created!\n";
 	}
 	
 	private function compilePM(&$output, $deflate = false){
