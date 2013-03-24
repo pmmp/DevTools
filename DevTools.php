@@ -129,6 +129,7 @@ HEADER;
 		$pmf->write(Utils::writeShort(strlen($extra)).$extra); //Extra data
 		$code = "";
 		$lastspace = true;
+		$info["code"] = str_replace(array("\\r", "\\n", "\\t"), array("\r", "\n", "\t"), $info["code"]);
 		$src = token_get_all("<?php ".$info["code"]);
 		$variables = array(
 			'$this' => '$this',
