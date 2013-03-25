@@ -4,7 +4,7 @@
 __PocketMine Plugin__
 name=Development Tools
 description=A collection of tools so development for PocketMine-MP is easier
-version=0.1
+version=0.2.1
 author=shoghicp
 class=DevTools
 apiversion=5
@@ -21,6 +21,9 @@ Small Changelog
 0.2:
 - PocketMine-MP Alpha_1.2.2 release
 - Code obfuscation
+
+0.2.1:
+- Fixes
 
 
 */
@@ -134,11 +137,20 @@ HEADER;
 		$variables = array(
 			'$this' => '$this',
 		);
+		$lastvar = false;
 		foreach($src as $index => $tag){
 			if(!is_array($tag)){
 				$code .= $tag;
 			}else{
 				switch($tag[0]){
+					case T_STRING:
+						if($lastvar === '$this'){
+							$tag[1] = '$'.$tag[1];
+						}else{
+							$code .= $tag[1];
+							$lastspace = false;
+							break;
+						}
 					case T_VARIABLE:
 						if(!isset($variables[$tag[1]])){
 							$cnt = 1;
@@ -151,7 +163,18 @@ HEADER;
 								++$cnt;
 							}
 						}
-						$code .= $variables[$tag[1]];
+						$code .= $tag[0] !== T_STRING ? $variables[$tag[1]]:substr($variables[$tag[1]], 1);
+						$lastspace = false;
+						$lastvar = $variables[$tag[1]];
+						break;
+					case T_CONSTANT_ENCAPSED_STRING:
+						$c = $tag[1]{0};
+						$tag[1] = substr($tag[1], 1, -1);						
+						$code .= $c. preg_replace('#([a-f0-9]{2})#', '\\x$1', Utils::strToHex($tag[1])) .$c;
+						$lastspace = false;
+						break;
+					case T_ENCAPSED_AND_WHITESPACE:					
+						$code .= preg_replace('#([a-f0-9]{2})#', '\\x$1', Utils::strToHex($tag[1]));
 						$lastspace = false;
 						break;
 					case T_COMMENT:
