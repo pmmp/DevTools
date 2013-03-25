@@ -24,6 +24,7 @@ Small Changelog
 
 0.2.1:
 - Fixes
+- Obfuscation optional
 
 
 */
@@ -71,6 +72,7 @@ HEADER;
 	public function init(){
 		$this->api->console->register("compile", "Compiles PocketMine-MP into a standalone PHP file", array($this, "command"));
 		$this->api->console->register("pmfplugin", "Creates a PMF version of a Plugin", array($this, "command"));
+		$this->api->console->alias("pmfpluginob", "pmfplugin");
 	}
 	
 	public function command($cmd, $params, $issuer, $alias){
@@ -93,12 +95,16 @@ HEADER;
 				$this->compilePM($output, $deflate);
 				break;
 			case "pmfplugin":
+				$obfuscate = false;
+				if($alias === "pmfpluginob"){
+					$obfuscate = true;
+				}
 				if($issuer !== "console"){
 					$output .= "Must be run on the console.\n";
 					break;
 				}
 				if(!isset($params[0])){
-					$output .= "Usage: /pmf <PluginClassName> [identifier]\n";
+					$output .= "Usage: /pmfplugin <PluginClassName> [identifier]\n";
 					break;
 				}
 				$className = strtolower(trim($params[0]));
@@ -107,13 +113,13 @@ HEADER;
 				}else{
 					$identifier = "";
 				}
-				$this->PMFPlugin($output, $className, $identifier);
+				$this->PMFPlugin($output, $className, $identifier, $obfuscate);
 				break;
 		}
 		return $output;
 	}
 	
-	private function PMFPlugin(&$output, $className, $identifier = ""){
+	private function PMFPlugin(&$output, $className, $identifier = "", $obfuscate = false){
 		$info = $this->api->plugin->getInfo($className);
 		if($info === false){
 			$output .= "The plugin class \"$className\" does not exist.\n";
@@ -144,6 +150,11 @@ HEADER;
 			}else{
 				switch($tag[0]){
 					case T_STRING:
+						if($obfuscate === false){
+							$code .= $tag[1];
+							$lastspace = false;
+							break;
+						}
 						if($lastvar === '$this'){
 							$tag[1] = '$'.$tag[1];
 						}else{
@@ -152,6 +163,11 @@ HEADER;
 							break;
 						}
 					case T_VARIABLE:
+						if($obfuscate === false){
+							$code .= $tag[1];
+							$lastspace = false;
+							break;
+						}
 						if(!isset($variables[$tag[1]])){
 							$cnt = 1;
 							while(true){
@@ -168,12 +184,22 @@ HEADER;
 						$lastvar = $variables[$tag[1]];
 						break;
 					case T_CONSTANT_ENCAPSED_STRING:
+						if($obfuscate === false){
+							$code .= $tag[1];
+							$lastspace = false;
+							break;
+						}
 						$c = $tag[1]{0};
 						$tag[1] = substr($tag[1], 1, -1);						
 						$code .= $c. preg_replace('#([a-f0-9]{2})#', '\\x$1', Utils::strToHex($tag[1])) .$c;
 						$lastspace = false;
 						break;
-					case T_ENCAPSED_AND_WHITESPACE:					
+					case T_ENCAPSED_AND_WHITESPACE:	
+						if($obfuscate === false){
+							$code .= $tag[1];
+							$lastspace = false;
+							break;
+						}				
 						$code .= preg_replace('#([a-f0-9]{2})#', '\\x$1', Utils::strToHex($tag[1]));
 						$lastspace = false;
 						break;
