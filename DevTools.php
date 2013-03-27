@@ -4,10 +4,10 @@
 __PocketMine Plugin__
 name=Development Tools
 description=A collection of tools so development for PocketMine-MP is easier
-version=0.2.1
+version=0.2.2
 author=shoghicp
 class=DevTools
-apiversion=5
+apiversion=5,6
 */
 
 /*
@@ -26,6 +26,8 @@ Small Changelog
 - Fixes
 - Obfuscation optional
 
+0.2.2:
+- Compatible with new API 6 version format
 
 */
 		
@@ -127,11 +129,11 @@ HEADER;
 		}
 		$info = $info[0];
 		$pmf = new PMF($info["name"].".pmf", true, 0x01);
-		$pmf->write(chr(PMF_CURRENT_PLUGIN_VERSION));
+		$pmf->write(chr(0x01));
 		$pmf->write(Utils::writeShort(strlen($info["name"])).$info["name"]);
 		$pmf->write(Utils::writeShort(strlen($info["version"])).$info["version"]);
 		$pmf->write(Utils::writeShort(strlen($info["author"])).$info["author"]);
-		$pmf->write(Utils::writeShort((int) $info["apiversion"]));
+		$pmf->write(Utils::writeShort(strlen($info["apiversion"])).$info["apiversion"]);
 		$pmf->write(Utils::writeShort(strlen($info["class"])).$info["class"]);
 		$pmf->write(Utils::writeShort(strlen($identifier)).$identifier);
 		$extra = gzdeflate("", 9);
