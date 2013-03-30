@@ -4,7 +4,7 @@
 __PocketMine Plugin__
 name=Development Tools
 description=A collection of tools so development for PocketMine-MP is easier
-version=0.2.2
+version=0.3
 author=shoghicp
 class=DevTools
 apiversion=5,6
@@ -28,6 +28,9 @@ Small Changelog
 
 0.2.2:
 - Compatible with new API 6 version format
+
+0.3:
+- Eval PHP code from console /eval
 
 */
 		
@@ -74,12 +77,20 @@ HEADER;
 	public function init(){
 		$this->api->console->register("compile", "Compiles PocketMine-MP into a standalone PHP file", array($this, "command"));
 		$this->api->console->register("pmfplugin", "Creates a PMF version of a Plugin", array($this, "command"));
+		$this->api->console->register("eval", "eval() PHP Code", array($this, "command"));
 		$this->api->console->alias("pmfpluginob", "pmfplugin");
 	}
 	
 	public function command($cmd, $params, $issuer, $alias){
 		$output = "";
 		switch($cmd){
+			case "eval":
+				if($issuer !== "console"){					
+					$output .= "Please run this command on the console.\n";
+					break;
+				}
+				$output .= eval(implode(" ", $params));
+				break;
 			case "compile":
 				if($issuer !== "console"){
 					$output .= "Must be run on the console.\n";
