@@ -4,7 +4,7 @@
 __PocketMine Plugin__
 name=Development Tools
 description=A collection of tools so development for PocketMine-MP is easier
-version=0.3
+version=0.3.1
 author=shoghicp
 class=DevTools
 apiversion=5,6
@@ -31,6 +31,10 @@ Small Changelog
 
 0.3:
 - Eval PHP code from console /eval
+
+0.3.1
+- Fixes
+
 
 */
 		
@@ -162,19 +166,6 @@ HEADER;
 				$code .= $tag;
 			}else{
 				switch($tag[0]){
-					case T_STRING:
-						if($obfuscate === false){
-							$code .= $tag[1];
-							$lastspace = false;
-							break;
-						}
-						if($lastvar === '$this'){
-							$tag[1] = '$'.$tag[1];
-						}else{
-							$code .= $tag[1];
-							$lastspace = false;
-							break;
-						}
 					case T_VARIABLE:
 						if($obfuscate === false){
 							$code .= $tag[1];
@@ -298,11 +289,11 @@ HEADER;
 						case T_BAD_CHARACTER:
 							break;
 						case T_LOGICAL_AND:
-							$code .= "&&";
+							$buff .= "&&";
 							$lastspace = false;
 							break;
 						case T_LOGICAL_OR:
-							$code .= "||";
+							$buff .= "||";
 							$lastspace = false;
 							break;
 						case T_WHITESPACE:
