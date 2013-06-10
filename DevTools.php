@@ -7,7 +7,7 @@ description=A collection of tools so development for PocketMine-MP is easier
 version=0.3.1
 author=shoghicp
 class=DevTools
-apiversion=5,6,7,8
+apiversion=5,6,7,8,9
 */
 
 /*
