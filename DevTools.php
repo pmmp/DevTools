@@ -251,14 +251,16 @@ HEADER;
 	}
 	
 	private function compilePM(&$output, $deflate = false){
-		$fp = fopen(FILE_PATH."PocketMine-MP_".MAJOR_VERSION.".php", "wb");
+		$fp = fopen(FILE_PATH."PocketMine-MP_".MAJOR_VERSION."_[".CURRENT_MINECRAFT_VERSION."].php", "wb");
 		$srcdir = realpath(FILE_PATH."src/");
 		fwrite($fp, str_replace(array(
 			"{{version}}",
 			"{{time}}",
+			"{{mcpe}}",
 		), array(
 			MAJOR_VERSION,
 			microtime(true),
+			CURRENT_MINECRAFT_VERSION,
 		), DevTools::$compileHeader));
 		$inc = get_included_files();
 		$inc[] = array_shift($inc);
