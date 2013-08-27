@@ -4,10 +4,10 @@
 __PocketMine Plugin__
 name=Development Tools
 description=A collection of tools so development for PocketMine-MP is easier
-version=0.3.1
+version=0.3.2
 author=shoghicp
 class=DevTools
-apiversion=5,6,7,8,9
+apiversion=5,6,7,8,9,10
 */
 
 /*
@@ -35,40 +35,40 @@ Small Changelog
 0.3.1
 - Fixes
 
+0.3.2
+- Fixes
+
 
 */
 		
 class DevTools implements Plugin{
 	public static $compileHeader = <<<HEADER
 <?php
-/*
-
-           -
-         /   \
-      /         \
-   /   PocketMine  \
-/          MP         \
-|\     @shoghicp     /|
-|.   \           /   .|
-| ..     \   /     .. |
-|    ..    |    ..    |
-|       .. | ..       |
-\          |          /
-   \       |       /
-      \    |    /
-         \ | /
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-
-Check the complete source code at
-http://www.pocketmine.org/
-
-PocketMine-MP {{version}} @ {{time}}
+/**
+ *
+ *  ____            _        _   __  __ _                  __  __ ____  
+ * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \ 
+ * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
+ * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/ 
+ * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_| 
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * @author PocketMine Team
+ * @link http://www.pocketmine.net/
+ *
+ *
+ * Check the complete source code at
+ * http://www.pocketmine.net/ 
+ *
+ * PocketMine-MP {{version}} for Minecraft: PE {{mcpe}} @ {{time}}
+ * 
+ *
 */
+
 define("POCKETMINE_COMPILE", true);
 
 HEADER;
@@ -79,9 +79,9 @@ HEADER;
 	}
 	
 	public function init(){
-		$this->api->console->register("compile", "Compiles PocketMine-MP into a standalone PHP file", array($this, "command"));
-		$this->api->console->register("pmfplugin", "Creates a PMF version of a Plugin", array($this, "command"));
-		$this->api->console->register("eval", "eval() PHP Code", array($this, "command"));
+		$this->api->console->register("compile", "[deflate]", array($this, "command"));
+		$this->api->console->register("pmfplugin", "<PluginClassName> [identifier]", array($this, "command"));
+		$this->api->console->register("eval", "<code...>", array($this, "command"));
 		$this->api->console->alias("pmfpluginob", "pmfplugin");
 	}
 	
@@ -136,7 +136,7 @@ HEADER;
 		return $output;
 	}
 	
-	private function PMFPlugin(&$output, $className, $identifier = "", $obfuscate = false){
+	private function PMFPlugin(&$output, $className, $data = array(), $obfuscate = false){
 		$info = $this->api->plugin->getInfo($className);
 		if($info === false){
 			$output .= "The plugin class \"$className\" does not exist.\n";
@@ -144,15 +144,19 @@ HEADER;
 		}
 		$info = $info[0];
 		$pmf = new PMF($info["name"].".pmf", true, 0x01);
-		$pmf->write(chr(0x01));
+		$pmf->write(chr(0x02));
 		$pmf->write(Utils::writeShort(strlen($info["name"])).$info["name"]);
 		$pmf->write(Utils::writeShort(strlen($info["version"])).$info["version"]);
 		$pmf->write(Utils::writeShort(strlen($info["author"])).$info["author"]);
 		$pmf->write(Utils::writeShort(strlen($info["apiversion"])).$info["apiversion"]);
 		$pmf->write(Utils::writeShort(strlen($info["class"])).$info["class"]);
 		$pmf->write(Utils::writeShort(strlen($identifier)).$identifier);
-		$extra = gzdeflate("", 9);
-		$pmf->write(Utils::writeShort(strlen($extra)).$extra); //Extra data
+		$extra = "";
+		foreach($data as $k => $v){
+			$extra .= str_replace("=", "", base64_encode(str_replace(":", "_", $k).":".$v)).";";
+		}
+		$extra = gzdeflate($extra, 9);
+		$pmf->write(Utils::writeInt(strlen($extra)).$extra); //Extra data
 		$code = "";
 		$lastspace = true;
 		$info["code"] = str_replace(array("\\r", "\\n", "\\t"), array("\r", "\n", "\t"), $info["code"]);
@@ -287,14 +291,6 @@ HEADER;
 						case T_CLOSE_TAG:
 						case T_INLINE_HTML:
 						case T_BAD_CHARACTER:
-							break;
-						case T_LOGICAL_AND:
-							$buff .= "&&";
-							$lastspace = false;
-							break;
-						case T_LOGICAL_OR:
-							$buff .= "||";
-							$lastspace = false;
 							break;
 						case T_WHITESPACE:
 							switch(str_replace("\t", "", $tag[1])){
