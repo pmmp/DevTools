@@ -140,7 +140,7 @@ HEADER;
 		$info = $this->api->plugin->getInfo($className);
 		if($info === false){
 			$output .= "The plugin class \"$className\" does not exist.\n";
-			break;
+			return false;
 		}
 		$info = $info[0];
 		$pmf = new PMF($info["name"].".pmf", true, 0x01);
@@ -238,6 +238,10 @@ HEADER;
 								break;
 						}
 						break;
+					case T_END_HEREDOC:
+						$code .= $tag[1]."\n";
+						$lastspace = false;
+						break;	
 					default:
 						$code .= $tag[1];
 						$lastspace = false;
