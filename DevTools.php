@@ -186,6 +186,11 @@ HEADER;
 						$lastspace = false;
 						$lastObjectVar = true;
 						break;
+					case T_FUNCTION:
+						$code .= $tag[1];
+						$lastspace = false;
+						$lastObjectVar = false;
+						break;
 					case T_VARIABLE:
 						if($lastObjectVar === true or $obfuscate === false){
 							$code .= $tag[1];
@@ -193,9 +198,14 @@ HEADER;
 							break;
 						}
 						if(!isset($variables[$tag[1]])){
-							$cnt = 1;
+							$cnt = 7;
+							$rangesF = range(0x41, 0x5a) + range(0x61, 0x7a) + range(0x7f, 0xff);
+							$ranges = $rangesF + range(0x30, 0x39);
 							while(true){
-								$v = '$'.chr(mt_rand(97, 122)).Utils::strToHex(Utils::getRandomBytes($cnt, false));
+								$v = '$'.chr($rangesF[mt_rand(0, count($rangesF) - 1)]);
+								for($k = $cnt; $k > 0; --$k){
+									$v .= chr($ranges[mt_rand(0, count($ranges) - 1)]);
+								}
 								if(!in_array($v, $variables, true)){
 									$variables[$tag[1]] = $v;
 									break;
