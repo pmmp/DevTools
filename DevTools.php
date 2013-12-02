@@ -4,7 +4,7 @@
 __PocketMine Plugin__
 name=Development Tools
 description=A collection of tools so development for PocketMine-MP is easier
-version=0.4
+version=0.5
 author=shoghicp
 class=DevTools
 apiversion=5,6,7,8,9,10,11
@@ -42,6 +42,9 @@ Small Changelog
 - Compilation fixes
 - Finished code obfuscation
 
+0.5:
+- Added code snippets
+
 
 */
 		
@@ -77,21 +80,45 @@ define("POCKETMINE_COMPILE", true);
 
 HEADER;
 
-	private $api;
+	private $api, $config;
 	public function __construct(ServerAPI $api, $server = false){
 		$this->api = $api;
 	}
 	
 	public function init(){
+		$this->config = new Config($this->api->plugin->configPath($this)."config.yml", CONFIG_YAML, array(
+			"snippets" => array(),
+		));
 		$this->api->console->register("compile", "[deflate]", array($this, "command"));
 		$this->api->console->register("pmfplugin", "<PluginClassName> [identifier]", array($this, "command"));
-		$this->api->console->register("eval", "<code...>", array($this, "command"));
+		$this->api->console->register("eval", "<code...>", array($this, "command"));		
+		$this->api->console->register("snippet", "<name> [code...]", array($this, "command"));
 		$this->api->console->alias("pmfpluginob", "pmfplugin");
 	}
 	
 	public function command($cmd, $params, $issuer, $alias){
 		$output = "";
 		switch($cmd){
+			case "snippet":
+				if($issuer !== "console"){					
+					$output .= "Please run this command on the console.\n";
+					break;
+				}
+				if(count($params) > 1){
+					$s = $this->config->get("snippets");
+					$index = array_shift($params);
+					$s[strtolower($index)] = base64_encode(implode(" ", $params));
+					$this->config->set("snippets", $s);
+					$output .= "Snippet saved.\n";
+				}else{
+					if(isset($this->config->get("snippets")[strtolower($params[0])])){
+						eval(base64_decode($this->config->get("snippets")[strtolower($params[0])]));
+						$output .= "Snippet executed.\n";
+					}else{
+						$output .= "Snippet does not exists.\n";
+					}
+				}
+				break;
 			case "eval":
 				if($issuer !== "console"){					
 					$output .= "Please run this command on the console.\n";
