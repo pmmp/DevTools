@@ -4,10 +4,10 @@
 __PocketMine Plugin__
 name=Development Tools
 description=A collection of tools so development for PocketMine-MP is easier
-version=0.5
-author=shoghicp
+version=0.6
+author=PocketMine Team
 class=DevTools
-apiversion=5,6,7,8,9,10,11
+apiversion=11
 */
 
 /*
@@ -45,6 +45,10 @@ Small Changelog
 0.5:
 - Added code snippets
 
+0.6
+- PMF plugins are now saved on the DevTools folder
+- Compatible with Amai Beetroot
+
 
 */
 		
@@ -65,7 +69,6 @@ class DevTools implements Plugin{
  * (at your option) any later version.
  *
  * @author PocketMine Team
- * @link http://www.pocketmine.net/
  *
  *
  * Check the complete source code at
@@ -167,14 +170,49 @@ HEADER;
 		return $output;
 	}
 	
+	private function encodeString($str){
+		$escape = false;
+		$len = strlen($str);
+		$ret = "";
+		for($i = 0; $i < $len; ++$i){
+			$c = $str{$i};
+			if($c === "\\"){
+				$escape = true;
+				$ret .= $c;
+			}elseif($escape == true){
+				$escape = false;
+				$ret .= $c;
+			}
+			
+			switch(mt_rand(0,2)){
+				case 0:
+					$ret .= "\x".dechex(ord($c));
+					break;
+				case 1:
+					$ret .= "\\".decoct(ord($c));
+					break;
+				case 2:
+					$ret .= $c;
+					break;
+			}
+		}
+		return $ret;
+	}
+	
 	private function PMFPlugin(&$output, $className, $data = array(), $obfuscate = false){
-		$info = $this->api->plugin->getInfo($className);
+		$className = trim(strtolower($className));
+		$info = false;
+		foreach($this->api->plugin->getAll() as $identifier => $plugin){
+			if($plugin[1]["class"] == $className){
+				$info = $plugin[1];
+				break;
+			}
+		}
 		if($info === false){
 			$output .= "The plugin class \"$className\" does not exist.\n";
 			return false;
 		}
-		$info = $info[0];
-		$pmf = new PMF($info["name"].".pmf", true, 0x01);
+		$pmf = new PMF($this->api->plugin->configPath($this).$info["name"].".pmf", true, 0x01);
 		$pmf->write(chr(0x02));
 		$pmf->write(Utils::writeShort(strlen($info["name"])).$info["name"]);
 		$pmf->write(Utils::writeShort(strlen($info["version"])).$info["version"]);
@@ -252,7 +290,7 @@ HEADER;
 						}
 						$c = $tag[1]{0};
 						$tag[1] = substr($tag[1], 1, -1);						
-						$code .= $c. str_replace("\\x0a", "\n", preg_replace('#([a-f0-9]{2})#', '\\x$1', Utils::strToHex($tag[1]))) .$c;
+						$code .= $c. $this->encodeString($tag[1]) .$c;
 						$lastspace = false;
 						break;
 					case T_ENCAPSED_AND_WHITESPACE:	
@@ -261,7 +299,7 @@ HEADER;
 							$lastspace = false;
 							break;
 						}				
-						$code .= str_replace("\\x0a", "\n", preg_replace('#([a-f0-9]{2})#', '\\x$1', Utils::strToHex($tag[1])));
+						$code .= $this->encodeString($tag[1]);
 						$lastspace = false;
 						break;
 					case T_COMMENT:
@@ -304,11 +342,11 @@ HEADER;
 		}
 		$code = gzdeflate($code, 9);
 		$pmf->write($code);
-		$output .= "The PMF version of the plugin has been created!\n";
+		$output .= "The PMF version of the plugin has been created! It has been saved on the \"".$this->api->plugin->configPath($this)."\" folder\n";
 	}
 	
 	private function compilePM(&$output, $deflate = false){
-		$fp = fopen(FILE_PATH."PocketMine-MP_".MAJOR_VERSION."_[".CURRENT_MINECRAFT_VERSION."].php", "wb");
+		$fp = fopen($this->api->plugin->configPath($this)."PocketMine-MP_".MAJOR_VERSION."_[".CURRENT_MINECRAFT_VERSION."].php", "wb");
 		$srcdir = realpath(FILE_PATH."src/");
 		fwrite($fp, str_replace(array(
 			"{{version}}",
