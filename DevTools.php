@@ -4,10 +4,10 @@
 __PocketMine Plugin__
 name=Development Tools
 description=A collection of tools so development for PocketMine-MP is easier
-version=0.6
+version=0.7
 author=PocketMine Team
 class=DevTools
-apiversion=11
+apiversion=11,12
 */
 
 /*
@@ -48,6 +48,10 @@ Small Changelog
 0.6
 - PMF plugins are now saved on the DevTools folder
 - Compatible with Amai Beetroot
+
+0.7
+- API 12
+- New obfuscation methods ;)
 
 
 */
@@ -170,29 +174,56 @@ HEADER;
 		return $output;
 	}
 	
+	private function randomCase($str){
+		$len = strlen($str);
+		$ret = "";
+		for($i = 0; $i < $len; ++$i){
+			switch(mt_rand(0, 2)){
+				case 0:
+					$ret .= strtoupper($str{$i});
+					break;
+				case 1:
+					$ret .= strtolower($str{$i});
+					break;
+				case 2:
+					$ret .= $str{$i};
+					break;
+			}
+		}
+		return $ret;
+	}
+	
 	private function encodeString($str){
 		$escape = false;
 		$len = strlen($str);
 		$ret = "";
 		for($i = 0; $i < $len; ++$i){
 			$c = $str{$i};
-			if($c === "\\"){
+			if($c == "\n"){
+				$ret .= $c;
+				continue;
+			}elseif($c === "\\"){
 				$escape = true;
 				$ret .= $c;
+				continue;
 			}elseif($escape == true){
 				$escape = false;
 				$ret .= $c;
+				continue;
 			}
+			
 			
 			switch(mt_rand(0,2)){
 				case 0:
-					$ret .= "\x".dechex(ord($c));
-					break;
+					if(ord($c) >= 0x20 and ord($c) <= 0x7f and $c != "'" and $c != '"' and $c != '$'){
+						$ret .= $c;
+						break;
+					}				
 				case 1:
-					$ret .= "\\".decoct(ord($c));
+					$ret .= "\x".str_pad(dechex(ord($c)), 2, "0", STR_PAD_LEFT);
 					break;
 				case 2:
-					$ret .= $c;
+					$ret .= "\\".str_pad(decoct(ord($c)), 3, "0", STR_PAD_LEFT);
 					break;
 			}
 		}
@@ -247,6 +278,7 @@ HEADER;
 					case T_PUBLIC:
 					case T_PROTECTED:
 					case T_VAR:
+					case T_STATIC:
 						$code .= $tag[1];
 						$lastspace = false;
 						$lastObjectVar = true;
@@ -256,13 +288,32 @@ HEADER;
 						$lastspace = false;
 						$lastObjectVar = false;
 						break;
+					case T_OBJECT_OPERATOR:
+						$code .= $tag[1];
+						$lastObjectVar = true;
+						break;
+					case T_STRING:
+						if($lastObjectVar === true){
+							$xorKey = Utils::getRandomBytes(strlen($tag[1]), false);
+							$code .= '{"'.$this->encodeString($tag[1] ^ $xorKey).'"^"'.$this->encodeString($xorKey).'"}';
+						}else{
+							$code .= $tag[1];
+						}
+						$lastObjectVar = false;
+						$lastspace = false;
+						break;
 					case T_VARIABLE:
-						if($lastObjectVar === true or $obfuscate === false){
+						if($obfuscate === false){
 							$code .= $tag[1];
 							$lastspace = false;
 							break;
 						}
-						if(!isset($variables[$tag[1]])){
+						if($lastObjectVar === true){							
+							//$code .= '${"'.substr($this->encodeString($tag[1]), 1).'"}';
+							$code .= $tag[1];
+							$lastspace = false;
+							break;
+						}elseif(!isset($variables[$tag[1]])){
 							$cnt = 7;
 							$rangesF = range(0x41, 0x5a) + range(0x61, 0x7a) + range(0x7f, 0xff);
 							$ranges = $rangesF + range(0x30, 0x39);
@@ -278,7 +329,7 @@ HEADER;
 								++$cnt;
 							}
 						}
-						$code .= $tag[0] !== T_STRING ? $variables[$tag[1]]:substr($variables[$tag[1]], 1);
+						$code .= $variables[$tag[1]];
 						$lastspace = false;
 						$lastvar = $variables[$tag[1]];
 						break;
