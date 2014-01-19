@@ -4,7 +4,7 @@
 __PocketMine Plugin__
 name=Development Tools
 description=A collection of tools so development for PocketMine-MP is easier
-version=0.7
+version=0.7.1
 author=PocketMine Team
 class=DevTools
 apiversion=11,12
@@ -52,6 +52,9 @@ Small Changelog
 0.7
 - API 12
 - New obfuscation methods ;)
+
+0.7.1
+- Fixed obfuscation being applied on non-obfuscation mode
 
 
 */
@@ -293,7 +296,7 @@ HEADER;
 						$lastObjectVar = true;
 						break;
 					case T_STRING:
-						if($lastObjectVar === true){
+						if($lastObjectVar === true and $obfuscate === true){
 							$xorKey = Utils::getRandomBytes(strlen($tag[1]), false);
 							$code .= '{"'.$this->encodeString($tag[1] ^ $xorKey).'"^"'.$this->encodeString($xorKey).'"}';
 						}else{
