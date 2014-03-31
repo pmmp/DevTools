@@ -1,0 +1,26 @@
+name: DevTools
+main: DevTools\DevTools
+version: 1.0.0
+api: [1.0.0]
+load: STARTUP
+author: PocketMine Team
+authors: [shoghicp]
+description: Plugin that allows the creation of Phar plugins, direct code execution and more.
+website: https://github.com/PocketMine/DevTools
+commands:
+ makeplugin:
+  description: Creates a Phar plugin from a unarchived one
+  usage: "/makeplugin <pluginName>"
+  permission: devtools.command.makeplugin
+permissions:
+ devtools:
+  default: op
+  description: "Allows using all the DevTools things"
+  childs:
+   devtools.command:
+    default: op
+    description: "Allows using all the DevTools commands"
+    childs:
+     devtools.command.makeplugin:
+      default: op
+      description: "Allows the creation of Phar plugins"
