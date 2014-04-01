@@ -6,3 +6,6 @@
 - Drop it into the PocketMine's `plugins/` folder.
 - Restart the server. The plugin will be loaded
 
+## Usage
+* _/makeplugin <pluginName>_: Creates a Phar plugin archive for its distribution
+* _/makeserver_: Creates a PocketMine-MP Phar archive
