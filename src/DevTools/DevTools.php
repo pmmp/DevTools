@@ -5,6 +5,8 @@ namespace DevTools;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\network\protocol\Info;
+use pocketmine\permission\Permission;
+use pocketmine\Player;
 use pocketmine\plugin\FolderPluginLoader;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginBase;
@@ -24,8 +26,49 @@ class DevTools extends PluginBase{
 			case "makeserver":
 				return $this->makeServerCommand($sender, $command, $label, $args);
 				break;
+			case "checkperm":
+				return $this->permissionCheckCommand($sender, $command, $label, $args);
+				break;
 			default:
 				return false;
+		}
+	}
+
+	private function permissionCheckCommand(CommandSender $sender, Command $command, $label, array $args){
+		$target = $sender;
+		if(!isset($args[0])){
+			return false;
+		}
+		$node = strtolower($args[0]);
+		if(isset($args[1])){
+			if(($player = Player::get($args[1])) instanceof Player){
+				$target = $player;
+			}else{
+				return false;
+			}
+		}
+
+		if($target !== $sender and !$sender->hasPermission("devtools.command.checkperm.other")){
+			$sender->sendMessage(TextFormat::RED . "You do not have permissions to check other players.");
+			return true;
+		}else{
+			$sender->sendMessage(TextFormat::GREEN . "---- ".TextFormat::WHITE . "Permission node ".$node.TextFormat::GREEN. " ----");
+			$perm = $this->getServer()->getPluginManager()->getPermission($node);
+			if($perm instanceof Permission){
+				$desc = TextFormat::GOLD . "Description: ".TextFormat::WHITE . $perm->getDescription()."\n";
+				$desc .= TextFormat::GOLD . "Default: ".TextFormat::WHITE . $perm->getDefault()."\n";
+				$children = "";
+				foreach($perm->getChildren() as $name => $true){
+					$children .= $name . ", ";
+				}
+				$desc .= TextFormat::GOLD . "Children: ".TextFormat::WHITE . substr($children, 0, -2)."\n";
+			}else{
+				$desc = TextFormat::RED . "Permission does not exist\n";
+				$desc .= TextFormat::GOLD . "Default: ".TextFormat::WHITE . Permission::$DEFAULT_PERMISSION."\n";
+			}
+			$sender->sendMessage($desc);
+			$sender->sendMessage(TextFormat::YELLOW . $target->getName() . TextFormat::WHITE . " has it set to ".($target->hasPermission($node) === true ? TextFormat::GREEN . "true" : TextFormat::RED . "false"));
+			return true;
 		}
 	}
 

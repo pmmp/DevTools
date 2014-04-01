@@ -9,3 +9,4 @@
 ## Usage
 * _/makeplugin <pluginName>_: Creates a Phar plugin archive for its distribution
 * _/makeserver_: Creates a PocketMine-MP Phar archive
+* _/checkperm <node> [playerName]_: Checks a permission node

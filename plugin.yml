@@ -1,6 +1,6 @@
 name: DevTools
 main: DevTools\DevTools
-version: 1.2.0
+version: 1.3.0
 api: [1.0.0]
 load: STARTUP
 author: PocketMine Team
@@ -16,18 +16,29 @@ commands:
   description: Creates a Phar plugin from a unarchived one
   usage: "/makeplugin <pluginName>"
   permission: devtools.command.makeplugin
+ checkperm:
+  description: Checks a permission value for the current sender, or a player
+  usage: "/checkperm <node> [playerName]"
+  permission: devtools.command.checkperm
 permissions:
  devtools:
   default: op
   description: "Allows using all the DevTools things"
-  childs:
+  children:
    devtools.command:
     default: op
     description: "Allows using all the DevTools commands"
-    childs:
+    children:
      devtools.command.makeplugin:
       default: op
       description: "Allows the creation of Phar plugins"
      devtools.command.makeserver:
       default: op
       description: "Allows the creation of a PocketMine-MP Phar"
+     devtools.command.checkperm:
+      default: true
+      description: "Allows checking a permission value"
+      children:
+       devtools.command.checkperm.other:
+        default: op
+        description: "Allows checking others permission value"
