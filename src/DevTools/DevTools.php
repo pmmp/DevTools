@@ -1,19 +1,43 @@
 <?php
 
+/*
+ * DevTools plugin for PocketMine-MP
+ * Copyright (C) 2014 PocketMine Team <https://github.com/PocketMine/SimpleAuth>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+*/
+
 namespace DevTools;
 
+use FolderPluginLoader\FolderPluginLoader;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\network\protocol\Info;
 use pocketmine\permission\Permission;
 use pocketmine\Player;
-use pocketmine\plugin\FolderPluginLoader;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginBase;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 
 class DevTools extends PluginBase{
+
+	public function onLoad(){
+		$this->getServer()->getLoader()->add("FolderPluginLoader", array(
+			$this->getFile() . "src"
+		));
+		$this->getServer()->getPluginManager()->registerInterface("FolderPluginLoader\\FolderPluginLoader");
+		console("[INFO] Registered folder plugin loader");
+	}
+
 	public function onEnable(){
 		@mkdir($this->getDataFolder());
 	}
@@ -21,7 +45,11 @@ class DevTools extends PluginBase{
 	public function onCommand(CommandSender $sender, Command $command, $label, array $args){
 		switch($command->getName()){
 			case "makeplugin":
-				return $this->makePluginCommand($sender, $command, $label, $args);
+				if(isset($args[0]) and $args[0] === "FolderPluginLoader"){
+					return $this->makePluginLoader($sender, $command, $label, $args);
+				}else{
+					return $this->makePluginCommand($sender, $command, $label, $args);
+				}
 				break;
 			case "makeserver":
 				return $this->makeServerCommand($sender, $command, $label, $args);
@@ -41,7 +69,7 @@ class DevTools extends PluginBase{
 		}
 		$node = strtolower($args[0]);
 		if(isset($args[1])){
-			if(($player = Player::get($args[1])) instanceof Player){
+			if(($player = $this->getServer()->getPlayer($args[1])) instanceof Player){
 				$target = $player;
 			}else{
 				return false;
@@ -72,6 +100,38 @@ class DevTools extends PluginBase{
 		}
 	}
 
+	private function makePluginLoader(CommandSender $sender, Command $command, $label, array $args){
+		$pharPath = $this->getDataFolder() . DIRECTORY_SEPARATOR . "FolderPluginLoader.phar";
+		if(file_exists($pharPath)){
+			$sender->sendMessage("Phar plugin already exists, overwriting...");
+			@unlink($pharPath);
+		}
+		$phar = new \Phar($pharPath);
+		$phar->setMetadata([
+			"name" => "FolderPluginLoader",
+			"version" => "1.0.0",
+			"main" => "FolderPluginLoader\\Main",
+			"api" => array("1.0.0"),
+			"depend" => array(),
+			"description" => "Loader of folder plugins",
+			"authors" => array("PocketMine Team"),
+			"website" => "https://github.com/PocketMine/DevTools",
+			"creationDate" => time()
+		]);
+		$phar->setStub('<?php __HALT_COMPILER();');
+		$phar->setSignatureAlgorithm(\Phar::SHA1);
+		$phar->startBuffering();
+
+		$phar->addFromString("plugin.yml", "name: FolderPluginLoader\nversion: 1.0.0\nmain: FolderPluginLoader\\Main\napi: [1.0.0]\n");
+		$phar->addFile($this->getFile() . "src/FolderPluginLoader/FolderPluginLoader.php", "src/FolderPluginLoader/FolderPluginLoader.php");
+		$phar->addFile($this->getFile() . "src/FolderPluginLoader/Main.php", "src/FolderPluginLoader/Main.php");
+
+		$phar->compressFiles(\Phar::GZ);
+		$phar->stopBuffering();
+		$sender->sendMessage("Folder plugin loader has been created on ".$pharPath);
+		return true;
+	}
+
 	private function makePluginCommand(CommandSender $sender, Command $command, $label, array $args){
 		$pluginName = trim(implode(" ", $args));
 		if($pluginName === "" or !(($plugin = Server::getInstance()->getPluginManager()->getPlugin($pluginName)) instanceof Plugin)){
@@ -99,7 +159,8 @@ class DevTools extends PluginBase{
 			"depend" => $description->getDepend(),
 			"description" => $description->getDescription(),
 			"authors" => $description->getAuthors(),
-			"website" => $description->getWebsite()
+			"website" => $description->getWebsite(),
+			"creationDate" => time()
 		]);
 		$phar->setStub('<?php echo "PocketMine-MP plugin '.$description->getName() .' v'.$description->getVersion().'\nThis file has been generated using DevTools v'.$this->getDescription()->getVersion().' at '.date("r").'\n----------------\n";if(extension_loaded("phar")){$phar = new \Phar(__FILE__);foreach($phar->getMetadata() as $key => $value){echo ucfirst($key).": ".(is_array($value) ? implode(", ", $value):$value)."\n";}} __HALT_COMPILER();');
 		$phar->setSignatureAlgorithm(\Phar::SHA1);
@@ -124,7 +185,7 @@ class DevTools extends PluginBase{
 
 	private function makeServerCommand(CommandSender $sender, Command $command, $label, array $args){
 		$server = Server::getInstance();
-		$pharPath = $this->getDataFolder() . DIRECTORY_SEPARATOR . $server->getName().".phar";
+		$pharPath = $this->getDataFolder() . DIRECTORY_SEPARATOR . $server->getName()."_".$server->getPocketMineVersion().".phar";
 		if(file_exists($pharPath)){
 			$sender->sendMessage("Phar file already exists, overwriting...");
 			@unlink($pharPath);
@@ -135,7 +196,8 @@ class DevTools extends PluginBase{
 			"version" => $server->getPocketMineVersion(),
 			"api" => $server->getApiVersion(),
 			"minecraft" => $server->getVersion(),
-			"protocol" => Info::CURRENT_PROTOCOL
+			"protocol" => Info::CURRENT_PROTOCOL,
+			"creationDate" => time()
 		]);
 		$phar->setStub('<?php define("pocketmine\\\\PATH", "phar://". __FILE__ ."/"); require_once("phar://". __FILE__ ."/src/pocketmine/PocketMine.php");  __HALT_COMPILER();');
 		$phar->setSignatureAlgorithm(\Phar::SHA1);
