@@ -35,6 +35,7 @@ class DevTools extends PluginBase{
 			$this->getFile() . "src"
 		));
 		$this->getServer()->getPluginManager()->registerInterface("FolderPluginLoader\\FolderPluginLoader");
+		$this->getServer()->getPluginManager()->loadPlugins($this->getServer()->getPluginPath(), array("FolderPluginLoader\\FolderPluginLoader"));
 		console("[INFO] Registered folder plugin loader");
 	}
 
