@@ -30,17 +30,16 @@ use pocketmine\utils\TextFormat;
 
 class DevTools extends PluginBase{
 
-	public function onLoad(){
+	public function onEnable(){
+		@mkdir($this->getDataFolder());
 		$this->getServer()->getLoader()->add("FolderPluginLoader", array(
 			$this->getFile() . "src"
 		));
-		$this->getServer()->getPluginManager()->registerInterface("FolderPluginLoader\\FolderPluginLoader");
-		$this->getServer()->getPluginManager()->loadPlugins($this->getServer()->getPluginPath(), array("FolderPluginLoader\\FolderPluginLoader"));
-		console("[INFO] Registered folder plugin loader");
-	}
-
-	public function onEnable(){
-		@mkdir($this->getDataFolder());
+		if(!class_exists("FolderPluginLoader\\FolderPluginLoader", false)){
+			$this->getServer()->getPluginManager()->registerInterface("FolderPluginLoader\\FolderPluginLoader");
+			$this->getServer()->getPluginManager()->loadPlugins($this->getServer()->getPluginPath(), array("FolderPluginLoader\\FolderPluginLoader"));
+			console("[INFO] Registered folder plugin loader");
+		}
 	}
 
 	public function onCommand(CommandSender $sender, Command $command, $label, array $args){
@@ -123,7 +122,7 @@ class DevTools extends PluginBase{
 		$phar->setSignatureAlgorithm(\Phar::SHA1);
 		$phar->startBuffering();
 
-		$phar->addFromString("plugin.yml", "name: FolderPluginLoader\nversion: 1.0.0\nmain: FolderPluginLoader\\Main\napi: [1.0.0]\n");
+		$phar->addFromString("plugin.yml", "name: FolderPluginLoader\nversion: 1.0.0\nmain: FolderPluginLoader\\Main\napi: [1.0.0]\nload: STARTUP\n");
 		$phar->addFile($this->getFile() . "src/FolderPluginLoader/FolderPluginLoader.php", "src/FolderPluginLoader/FolderPluginLoader.php");
 		$phar->addFile($this->getFile() . "src/FolderPluginLoader/Main.php", "src/FolderPluginLoader/Main.php");
 
