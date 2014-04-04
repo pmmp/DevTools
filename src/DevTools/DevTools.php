@@ -17,8 +17,10 @@
 
 namespace DevTools;
 
+use DevTools\commands\ExtractPluginCommand;
 use FolderPluginLoader\FolderPluginLoader;
 use pocketmine\command\Command;
+use pocketmine\command\CommandExecutor;
 use pocketmine\command\CommandSender;
 use pocketmine\network\protocol\Info;
 use pocketmine\permission\Permission;
@@ -28,7 +30,11 @@ use pocketmine\plugin\PluginBase;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 
-class DevTools extends PluginBase{
+class DevTools extends PluginBase implements CommandExecutor{
+
+	public function onLoad(){
+		$this->getServer()->getCommandMap()->register("devtools", new ExtractPluginCommand($this));
+	}
 
 	public function onEnable(){
 		@mkdir($this->getDataFolder());
@@ -50,13 +56,10 @@ class DevTools extends PluginBase{
 				}else{
 					return $this->makePluginCommand($sender, $command, $label, $args);
 				}
-				break;
 			case "makeserver":
 				return $this->makeServerCommand($sender, $command, $label, $args);
-				break;
 			case "checkperm":
 				return $this->permissionCheckCommand($sender, $command, $label, $args);
-				break;
 			default:
 				return false;
 		}
@@ -162,15 +165,19 @@ class DevTools extends PluginBase{
 			"website" => $description->getWebsite(),
 			"creationDate" => time()
 		]);
-		$phar->setStub('<?php echo "PocketMine-MP plugin '.$description->getName() .' v'.$description->getVersion().'\nThis file has been generated using DevTools v'.$this->getDescription()->getVersion().' at '.date("r").'\n----------------\n";if(extension_loaded("phar")){$phar = new \Phar(__FILE__);foreach($phar->getMetadata() as $key => $value){echo ucfirst($key).": ".(is_array($value) ? implode(", ", $value):$value)."\n";}} __HALT_COMPILER();');
+		if($description->getName() === "DevTools"){
+			$phar->setStub('<?php require("phar://". __FILE__ ."/src/DevTools/ConsoleScript.php"); __HALT_COMPILER();');
+		}else{
+			$phar->setStub('<?php echo "PocketMine-MP plugin '.$description->getName() .' v'.$description->getVersion().'\nThis file has been generated using DevTools v'.$this->getDescription()->getVersion().' at '.date("r").'\n----------------\n";if(extension_loaded("phar")){$phar = new \Phar(__FILE__);foreach($phar->getMetadata() as $key => $value){echo ucfirst($key).": ".(is_array($value) ? implode(", ", $value):$value)."\n";}} __HALT_COMPILER();');
+		}
 		$phar->setSignatureAlgorithm(\Phar::SHA1);
 		$reflection = new \ReflectionClass("pocketmine\\plugin\\PluginBase");
 		$file = $reflection->getProperty("file");
 		$file->setAccessible(true);
-		$filePath = realpath($file->getValue($plugin));
+		$filePath = rtrim(str_replace("\\", "/", $file->getValue($plugin)), "/") . "/";
 		$phar->startBuffering();
 		foreach(new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($filePath)) as $file){
-			$path = ltrim(str_replace(array($filePath, "\\"), array("", "/"), $file), "/");
+			$path = ltrim(str_replace(array("\\", $filePath), array("/", ""), $file), "/");
 			if($path{0} === "." or strpos($path, "/.") !== false){
 				continue;
 			}
@@ -204,9 +211,9 @@ class DevTools extends PluginBase{
 		$phar->startBuffering();
 
 		$filePath = substr(\pocketmine\PATH, 0, 7) === "phar://" ? \pocketmine\PATH : realpath(\pocketmine\PATH) . "/";
-		$filePath = ltrim(str_replace("\\", "/", $filePath), "/");
+		$filePath = rtrim(str_replace("\\", "/", $filePath), "/") . "/";
 		foreach(new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($filePath . "src")) as $file){
-			$path = ltrim(str_replace(array($filePath, "\\"), array("", "/"), $file), "/");
+			$path = ltrim(str_replace(array("\\", $filePath), array("/", ""), $file), "/");
 			if($path{0} === "." or strpos($path, "/.") !== false or substr($path, 0, 4) !== "src/"){
 				continue;
 			}
