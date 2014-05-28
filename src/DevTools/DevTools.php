@@ -44,7 +44,7 @@ class DevTools extends PluginBase implements CommandExecutor{
 		if(!class_exists("FolderPluginLoader\\FolderPluginLoader", false)){
 			$this->getServer()->getPluginManager()->registerInterface("FolderPluginLoader\\FolderPluginLoader");
 			$this->getServer()->getPluginManager()->loadPlugins($this->getServer()->getPluginPath(), array("FolderPluginLoader\\FolderPluginLoader"));
-			console("[INFO] Registered folder plugin loader");
+			$this->getLogger()->info("Registered folder plugin loader");
 		}
 	}
 

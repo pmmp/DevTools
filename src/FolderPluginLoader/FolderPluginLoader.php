@@ -24,6 +24,7 @@ use pocketmine\plugin\PluginBase;
 use pocketmine\plugin\PluginDescription;
 use pocketmine\plugin\PluginLoader;
 use pocketmine\Server;
+use pocketmine\utils\MainLogger;
 use pocketmine\utils\TextFormat;
 
 class FolderPluginLoader implements PluginLoader{
@@ -48,7 +49,7 @@ class FolderPluginLoader implements PluginLoader{
 	public function loadPlugin($file){
 		if(is_dir($file) and file_exists($file . "/plugin.yml") and file_exists($file . "/src/")){
 			if(($description = $this->getPluginDescription($file)) instanceof PluginDescription){
-				console("[INFO] ".TextFormat::LIGHT_PURPLE."Loading source plugin " . $description->getFullName());
+				MainLogger::getLogger()->info(TextFormat::LIGHT_PURPLE."Loading source plugin " . $description->getFullName());
 				$dataFolder = dirname($file) . DIRECTORY_SEPARATOR . $description->getName();
 				if(file_exists($dataFolder) and !is_dir($dataFolder)){
 					trigger_error("Projected dataFolder '" . $dataFolder . "' for " . $description->getName() . " exists and is not a directory", E_USER_WARNING);
@@ -121,7 +122,7 @@ class FolderPluginLoader implements PluginLoader{
 	 */
 	public function enablePlugin(Plugin $plugin){
 		if($plugin instanceof PluginBase and !$plugin->isEnabled()){
-			console("[INFO] Enabling " . $plugin->getDescription()->getFullName());
+			MainLogger::getLogger()->info("Enabling " . $plugin->getDescription()->getFullName());
 
 			$plugin->setEnabled(true);
 
@@ -134,7 +135,7 @@ class FolderPluginLoader implements PluginLoader{
 	 */
 	public function disablePlugin(Plugin $plugin){
 		if($plugin instanceof PluginBase and $plugin->isEnabled()){
-			console("[INFO] Disabling " . $plugin->getDescription()->getFullName());
+			MainLogger::getLogger()->info("Disabling " . $plugin->getDescription()->getFullName());
 
 			Server::getInstance()->getPluginManager()->callEvent(new PluginDisableEvent($plugin));
 
