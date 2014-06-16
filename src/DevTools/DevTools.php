@@ -27,6 +27,7 @@ use pocketmine\permission\Permission;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginBase;
+use pocketmine\plugin\PluginLoadOrder;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 
@@ -45,6 +46,7 @@ class DevTools extends PluginBase implements CommandExecutor{
 			$this->getServer()->getPluginManager()->registerInterface("FolderPluginLoader\\FolderPluginLoader");
 			$this->getServer()->getPluginManager()->loadPlugins($this->getServer()->getPluginPath(), array("FolderPluginLoader\\FolderPluginLoader"));
 			$this->getLogger()->info("Registered folder plugin loader");
+			$this->getServer()->enablePlugins(PluginLoadOrder::STARTUP);
 		}
 	}
 
