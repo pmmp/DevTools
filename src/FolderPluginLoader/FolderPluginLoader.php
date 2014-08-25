@@ -59,9 +59,7 @@ class FolderPluginLoader implements PluginLoader{
 
 
 				$className = $description->getMain();
-				$this->server->getLoader()->add(substr($className, 0, strrpos($className, "\\")), array(
-					$file . "/src"
-				));
+				$this->server->getLoader()->addPath($file . "/src");
 
 				if(class_exists($className, true)){
 					$plugin = new $className();
