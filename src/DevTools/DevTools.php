@@ -2,7 +2,7 @@
 
 /*
  * DevTools plugin for PocketMine-MP
- * Copyright (C) 2014 PocketMine Team <https://github.com/PocketMine/SimpleAuth>
+ * Copyright (C) 2014 PocketMine Team <https://github.com/PocketMine/DevTools>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -39,12 +39,10 @@ class DevTools extends PluginBase implements CommandExecutor{
 
 	public function onEnable(){
 		@mkdir($this->getDataFolder());
-		$this->getServer()->getLoader()->add("FolderPluginLoader", array(
-			$this->getFile() . "src"
-		));
+
 		if(!class_exists("FolderPluginLoader\\FolderPluginLoader", false)){
 			$this->getServer()->getPluginManager()->registerInterface("FolderPluginLoader\\FolderPluginLoader");
-			$this->getServer()->getPluginManager()->loadPlugins($this->getServer()->getPluginPath(), array("FolderPluginLoader\\FolderPluginLoader"));
+			$this->getServer()->getPluginManager()->loadPlugins($this->getServer()->getPluginPath(), ["FolderPluginLoader\\FolderPluginLoader"]);
 			$this->getLogger()->info("Registered folder plugin loader");
 			$this->getServer()->enablePlugins(PluginLoadOrder::STARTUP);
 		}
@@ -116,10 +114,10 @@ class DevTools extends PluginBase implements CommandExecutor{
 			"name" => "FolderPluginLoader",
 			"version" => "1.0.0",
 			"main" => "FolderPluginLoader\\Main",
-			"api" => array("1.0.0"),
-			"depend" => array(),
+			"api" => ["1.0.0"],
+			"depend" => [],
 			"description" => "Loader of folder plugins",
-			"authors" => array("PocketMine Team"),
+			"authors" => ["PocketMine Team"],
 			"website" => "https://github.com/PocketMine/DevTools",
 			"creationDate" => time()
 		]);
@@ -179,11 +177,12 @@ class DevTools extends PluginBase implements CommandExecutor{
 		$filePath = rtrim(str_replace("\\", "/", $file->getValue($plugin)), "/") . "/";
 		$phar->startBuffering();
 		foreach(new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($filePath)) as $file){
-			$path = ltrim(str_replace(array("\\", $filePath), array("/", ""), $file), "/");
+			$path = ltrim(str_replace(["\\", $filePath], ["/", ""], $file), "/");
 			if($path{0} === "." or strpos($path, "/.") !== false){
 				continue;
 			}
 			$phar->addFile($file, $path);
+			$sender->sendMessage("[DevTools] Adding $path");
 		}
 
 		$phar->compressFiles(\Phar::GZ);
@@ -193,7 +192,7 @@ class DevTools extends PluginBase implements CommandExecutor{
 	}
 
 	private function makeServerCommand(CommandSender $sender, Command $command, $label, array $args){
-		$server = Server::getInstance();
+		$server = $sender->getServer();
 		$pharPath = $this->getDataFolder() . DIRECTORY_SEPARATOR . $server->getName()."_".$server->getPocketMineVersion().".phar";
 		if(file_exists($pharPath)){
 			$sender->sendMessage("Phar file already exists, overwriting...");
@@ -215,16 +214,16 @@ class DevTools extends PluginBase implements CommandExecutor{
 		$filePath = substr(\pocketmine\PATH, 0, 7) === "phar://" ? \pocketmine\PATH : realpath(\pocketmine\PATH) . "/";
 		$filePath = rtrim(str_replace("\\", "/", $filePath), "/") . "/";
 		foreach(new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($filePath . "src")) as $file){
-			$path = ltrim(str_replace(array("\\", $filePath), array("/", ""), $file), "/");
+			$path = ltrim(str_replace(["\\", $filePath], ["/", ""], $file), "/");
 			if($path{0} === "." or strpos($path, "/.") !== false or substr($path, 0, 4) !== "src/"){
 				continue;
 			}
 			$phar->addFile($file, $path);
+			$sender->sendMessage("[DevTools] Adding $path");
 		}
-		$phar->compressFiles(\Phar::GZ);
 		$phar->stopBuffering();
 
-		$sender->sendMessage("PocketMine-MP Phar file has been created on ".$pharPath);
+		$sender->sendMessage($server->getName() . " " . $server->getPocketMineVersion() . " Phar file has been created on ".$pharPath);
 
 		return true;
 	}

@@ -28,7 +28,7 @@ class Main extends PluginBase{
 
 	public function onEnable(){
 		$this->getServer()->getPluginManager()->registerInterface("FolderPluginLoader\\FolderPluginLoader");
-		$this->getServer()->getPluginManager()->loadPlugins($this->getServer()->getPluginPath(), array("FolderPluginLoader\\FolderPluginLoader"));
+		$this->getServer()->getPluginManager()->loadPlugins($this->getServer()->getPluginPath(), ["FolderPluginLoader\\FolderPluginLoader"]);
 		$this->getServer()->enablePlugins(PluginLoadOrder::STARTUP);
 	}
 }

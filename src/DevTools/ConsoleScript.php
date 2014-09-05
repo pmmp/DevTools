@@ -2,7 +2,7 @@
 
 /*
  * DevTools plugin for PocketMine-MP
- * Copyright (C) 2014 PocketMine Team <https://github.com/PocketMine/SimpleAuth>
+ * Copyright (C) 2014 PocketMine Team <https://github.com/PocketMine/DevTools>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -15,7 +15,7 @@
  * GNU General Public License for more details.
 */
 
-$opts = getopt("", array("make:", "relative:", "out:", "entry:"));
+$opts = getopt("", ["make:", "relative:", "out:", "entry:", "compress"]);
 
 if(!isset($opts["make"])){
 	echo "== PocketMine-MP DevTools CLI interface ==\n\n";
@@ -55,7 +55,7 @@ echo "Adding files...\n";
 $maxLen = 0;
 $count = 0;
 foreach(new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($folderPath)) as $file){
-	$path = rtrim(str_replace(array("\\", $relativePath), array("/", ""), $file), "/");
+	$path = rtrim(str_replace(["\\", $relativePath], ["/", ""], $file), "/");
 	if($path{0} === "." or strpos($path, "/.") !== false){
 		continue;
 	}
@@ -65,8 +65,10 @@ foreach(new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($folderPa
 	}
 	echo "\r[".(++$count)."] ".str_pad($path, $maxLen, " ");
 }
-echo "\nCompressing...\n";
-$phar->compressFiles(\Phar::GZ);
+if(isset($opts["compress"])){
+	echo "\nCompressing...\n";
+	$phar->compressFiles(\Phar::GZ);
+}
 $phar->stopBuffering();
 
 echo "Done!\n";
