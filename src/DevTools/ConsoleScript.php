@@ -65,10 +65,7 @@ foreach(new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($folderPa
 	}
 	echo "\r[".(++$count)."] ".str_pad($path, $maxLen, " ");
 }
-if(isset($opts["compress"])){
-	echo "\nCompressing...\n";
-	$phar->compressFiles(\Phar::GZ);
-}
+
 $phar->stopBuffering();
 
 echo "Done!\n";

@@ -129,7 +129,12 @@ class DevTools extends PluginBase implements CommandExecutor{
 		$phar->addFile($this->getFile() . "src/FolderPluginLoader/FolderPluginLoader.php", "src/FolderPluginLoader/FolderPluginLoader.php");
 		$phar->addFile($this->getFile() . "src/FolderPluginLoader/Main.php", "src/FolderPluginLoader/Main.php");
 
-		$phar->compressFiles(\Phar::GZ);
+		foreach($phar as $file => $finfo){
+			/** @var \PharFileInfo $finfo */
+			if($finfo->getSize() > (1024 * 512)){
+				$finfo->compress(\Phar::GZ);
+			}
+		}
 		$phar->stopBuffering();
 		$sender->sendMessage("Folder plugin loader has been created on ".$pharPath);
 		return true;
