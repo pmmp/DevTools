@@ -190,7 +190,12 @@ class DevTools extends PluginBase implements CommandExecutor{
 			$sender->sendMessage("[DevTools] Adding $path");
 		}
 
-		$phar->compressFiles(\Phar::GZ);
+		foreach($phar as $file => $finfo){
+			/** @var \PharFileInfo $finfo */
+			if($finfo->getSize() > (1024 * 512)){
+				$finfo->compress(\Phar::GZ);
+			}
+		}
 		$phar->stopBuffering();
 		$sender->sendMessage("Phar plugin ".$description->getName() ." v".$description->getVersion()." has been created on ".$pharPath);
 		return true;
@@ -225,6 +230,12 @@ class DevTools extends PluginBase implements CommandExecutor{
 			}
 			$phar->addFile($file, $path);
 			$sender->sendMessage("[DevTools] Adding $path");
+		}
+		foreach($phar as $file => $finfo){
+			/** @var \PharFileInfo $finfo */
+			if($finfo->getSize() > (1024 * 512)){
+				$finfo->compress(\Phar::GZ);
+			}
 		}
 		$phar->stopBuffering();
 
