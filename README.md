@@ -24,3 +24,18 @@
 * _/makeplugin <pluginName>_: Creates a Phar plugin archive for its distribution
 * _/makeserver_: Creates a PocketMine-MP Phar archive
 * _/checkperm <node> [playerName]_: Checks a permission node
+
+## Create .phar from console
+Download [DevTools.phar](https://github.com/PocketMine/DevTools/releases)
+
+	php -dphar.readonly=0 DevTools.phar \
+	--make="./plugin/" \
+	--relative="./plugin/" \
+	--out "plugin.phar"
+
+or [ConsoleScript.php](https://github.com/PocketMine/DevTools/blob/master/src/DevTools/ConsoleScript.php)
+
+	php -dphar.readonly=0 ConsoleScript.php \
+	--make="./plugin/" \
+	--relative="./plugin/" \
+	--out "plugin.phar"
