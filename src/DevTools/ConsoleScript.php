@@ -15,13 +15,13 @@
  * GNU General Public License for more details.
 */
 
-const VERSION = "1.11.0";
+const VERSION = "1.11.1";
 
 $opts = getopt("", ["make:", "relative:", "out:", "entry:", "compress"]);
 
 if(!isset($opts["make"])){
 	echo "== PocketMine-MP DevTools CLI interface ==\n\n";
-	echo "Usage: ". PHP_BINARY ." -dphar.readonly=0 ".$argv[0]." --make <sourceFolder> --relative <relativePath> --entry \"relativeSourcePath.php\" --out <pharName.phar>\n";
+	echo "Usage: ". PHP_BINARY ." -dphar.readonly=0 " . $argv[0] . " --make <sourceFolder> --relative <relativePath> --entry \"relativeSourcePath.php\" --out <pharName.phar>\n";
 	exit(0);
 }
 
@@ -32,7 +32,7 @@ if(ini_get("phar.readonly") == 1){
 
 $folderPath = rtrim(str_replace("\\", "/", realpath($opts["make"])), "/") . "/";
 $relativePath = isset($opts["relative"]) ? rtrim(str_replace("\\", "/", realpath($opts["relative"])), "/") . "/" : $folderPath;
-$pharName = isset($opts["out"]) ? $opts["out"] : "output.phar";
+$pharName = $opts["out"] ?? "output.phar";
 
 
 
@@ -43,32 +43,45 @@ if(!is_dir($folderPath)){
 
 echo "\nCreating ".$pharName."...\n";
 $phar = new \Phar($pharName);
-if($metadata["name"] === "DevTools"){
-	$phar->setStub('<?php require("phar://". __FILE__ ."/src/DevTools/ConsoleScript.php"); __HALT_COMPILER();');
-}elseif(isset($opts["entry"]) and $opts["entry"] != null){
-	$entry = addslashes(str_replace("\\", "/", $opts["entry"]));
-	echo "Setting entry point to ".$entry."\n";
-	$phar->setStub('<?php require("phar://". __FILE__ ."/'.$entry.'"); __HALT_COMPILER();');
+
+if(file_exists($relativePath . "plugin.yml")){
+	$metadata = yaml_parse_file($relativePath."plugin.yml");
 }else{
-    if(file_exists($relativePath . "plugin.yml")){
-        $metadata = yaml_parse_file($relativePath."plugin.yml");
-        $phar->setMetadata([
-            "name" => $metadata["name"],
-            "version" => $metadata["version"],
-            "main" => $metadata["main"],
-            "api" => $metadata["api"],
-            "depend" => (isset($metadata["depend"]) ? $metadata["depend"] : ""),
-            "description" => (isset($metadata["description"]) ?$metadata["description"] : ""),
-            "authors" => (isset($metadata["authors"]) ? $metadata["authors"] : ""),
-            "website" => (isset($metadata["website"]) ? $metadata["website"] : ""),
-            "creationDate" => time()
-        ]);
-        $phar->setStub('<?php echo "PocketMine-MP plugin '. $metadata["name"] .' v'. $metadata["version"].'\nThis file has been generated using DevTools v" . $version . " at '.date("r").'\n----------------\n";if(extension_loaded("phar")){$phar = new \Phar(__FILE__);foreach($phar->getMetadata() as $key => $value){echo ucfirst($key).": ".(is_array($value) ? implode(", ", $value):$value)."\n";}} __HALT_COMPILER();');
-    }else{
-        echo "Missing entry point or plugin.yml\n";
-        exit(1);
-    }
+	echo "No plugin.yml found in relative path" . PHP_EOL;
+	$metadata = [];
 }
+
+if(isset($opts["entry"])){
+	$entry = addslashes(str_replace("\\", "/", $opts["entry"]));
+	echo "Setting entry point to " . $entry . "\n";
+	$phar->setStub('<?php require("phar://". __FILE__ ."/' . $entry . '"); __HALT_COMPILER();');
+}else{
+	if(file_exists($relativePath . "plugin.yml")){
+		$metadata = yaml_parse_file($relativePath . "plugin.yml");
+	}else{
+		echo "Missing entry point or plugin.yml\n";
+		exit(1);
+	}
+
+	$phar->setMetadata([
+		"name" => $metadata["name"],
+		"version" => $metadata["version"],
+		"main" => $metadata["main"],
+		"api" => $metadata["api"],
+		"depend" => ($metadata["depend"] ?? ""),
+		"description" => ($metadata["description"] ?? ""),
+		"authors" => ($metadata["authors"] ?? ""),
+		"website" => ($metadata["website"] ?? ""),
+		"creationDate" => time()
+	]);
+
+	if($metadata["name"] === "DevTools"){
+		$phar->setStub('<?php require("phar://". __FILE__ ."/src/DevTools/ConsoleScript.php"); __HALT_COMPILER();');
+	}else{
+		$phar->setStub('<?php echo "PocketMine-MP plugin '. $metadata["name"] .' v'. $metadata["version"] . '\nThis file has been generated using DevTools v" . $version . " at ' . date("r") . '\n----------------\n";if(extension_loaded("phar")){$phar = new \Phar(__FILE__);foreach($phar->getMetadata() as $key => $value){echo ucfirst($key).": ".(is_array($value) ? implode(", ", $value):$value)."\n";}} __HALT_COMPILER();');
+	}
+}
+
 $phar->setSignatureAlgorithm(\Phar::SHA1);
 $phar->startBuffering();
 echo "Adding files...\n";
