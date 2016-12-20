@@ -40,12 +40,11 @@ class DevTools extends PluginBase implements CommandExecutor{
 	public function onEnable(){
 		@mkdir($this->getDataFolder());
 
-		if(!class_exists("FolderPluginLoader\\FolderPluginLoader", false)){
-			$this->getServer()->getPluginManager()->registerInterface("FolderPluginLoader\\FolderPluginLoader");
-			$this->getServer()->getPluginManager()->loadPlugins($this->getServer()->getPluginPath(), ["FolderPluginLoader\\FolderPluginLoader"]);
-			$this->getLogger()->info("Registered folder plugin loader");
-			$this->getServer()->enablePlugins(PluginLoadOrder::STARTUP);
-		}
+		$this->getServer()->getPluginManager()->registerInterface("FolderPluginLoader\\FolderPluginLoader");
+		$this->getServer()->getPluginManager()->loadPlugins($this->getServer()->getPluginPath(), ["FolderPluginLoader\\FolderPluginLoader"]);
+		$this->getLogger()->info("Registered folder plugin loader");
+		$this->getServer()->enablePlugins(PluginLoadOrder::STARTUP);
+
 	}
 
 	public function onCommand(CommandSender $sender, Command $command, $label, array $args){
