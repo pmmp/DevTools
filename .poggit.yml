@@ -6,4 +6,5 @@ projects:
   PocketMine-DevTools:
     path: ""
     stub: "stub.php"
+    icon: devtools.png
 ...
