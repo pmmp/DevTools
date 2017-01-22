@@ -111,9 +111,9 @@ class DevTools extends PluginBase implements CommandExecutor{
 		$phar = new \Phar($pharPath);
 		$phar->setMetadata([
 			"name" => "FolderPluginLoader",
-			"version" => "1.0.0",
+			"version" => "1.0.1",
 			"main" => "FolderPluginLoader\\Main",
-			"api" => ["1.0.0"],
+			"api" => ["1.0.0", "2.0.0"],
 			"depend" => [],
 			"description" => "Loader of folder plugins",
 			"authors" => ["PocketMine Team"],
@@ -124,7 +124,7 @@ class DevTools extends PluginBase implements CommandExecutor{
 		$phar->setSignatureAlgorithm(\Phar::SHA1);
 		$phar->startBuffering();
 
-		$phar->addFromString("plugin.yml", "name: FolderPluginLoader\nversion: 1.0.0\nmain: FolderPluginLoader\\Main\napi: [1.0.0]\nload: STARTUP\n");
+		$phar->addFromString("plugin.yml", "name: FolderPluginLoader\nversion: 1.0.1\nmain: FolderPluginLoader\\Main\napi: [1.0.0, 2.0.0]\nload: STARTUP\n");
 		$phar->addFile($this->getFile() . "src/FolderPluginLoader/FolderPluginLoader.php", "src/FolderPluginLoader/FolderPluginLoader.php");
 		$phar->addFile($this->getFile() . "src/FolderPluginLoader/Main.php", "src/FolderPluginLoader/Main.php");
 
