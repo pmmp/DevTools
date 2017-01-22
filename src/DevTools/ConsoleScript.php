@@ -100,5 +100,5 @@ foreach(new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($folderPa
 
 $phar->stopBuffering();
 
-echo "Done!\n";
+echo "\nDone!\n";
 exit(0);
