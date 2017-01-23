@@ -21,7 +21,7 @@ $opts = getopt("", ["make:", "relative:", "out:", "entry:", "compress", "stub:"]
 
 if(!isset($opts["make"])){
 	echo "== PocketMine-MP DevTools CLI interface ==\n\n";
-	echo "Usage: ". PHP_BINARY ." -dphar.readonly=0 " . $argv[0] . " --make <sourceFolder> --relative <relativePath> --entry \"relativeSourcePath.php\" --out <pharName.phar>\n";
+	echo "Usage: " . PHP_BINARY . " -dphar.readonly=0 " . $argv[0] . " --make <sourceFolder> --relative <relativePath> --entry \"relativeSourcePath.php\" --out <pharName.phar>\n";
 	exit(0);
 }
 
@@ -37,15 +37,15 @@ $stubPath = $opts["stub"] ?? "stub.php";
 
 
 if(!is_dir($folderPath)){
-	echo $folderPath ." is not a folder\n";
+	echo $folderPath . " is not a folder\n";
 	exit(1);
 }
 
-echo "\nCreating ".$pharName."...\n";
+echo "\nCreating " . $pharName . "...\n";
 $phar = new \Phar($pharName);
 
 if(file_exists($relativePath . "plugin.yml")){
-	$metadata = yaml_parse_file($relativePath."plugin.yml");
+	$metadata = yaml_parse_file($relativePath . "plugin.yml");
 }else{
 	echo "No plugin.yml found in relative path" . PHP_EOL;
 	$metadata = [];
@@ -78,7 +78,7 @@ if(file_exists($opts["relative"] . "/" . $stubPath)){
 		"creationDate" => time()
 	]);
 
-	$phar->setStub('<?php echo "PocketMine-MP plugin '. $metadata["name"] .' v'. $metadata["version"] . '\nThis file has been generated using DevTools v" . $version . " at ' . date("r") . '\n----------------\n";if(extension_loaded("phar")){$phar = new \Phar(__FILE__);foreach($phar->getMetadata() as $key => $value){echo ucfirst($key).": ".(is_array($value) ? implode(", ", $value):$value)."\n";}} __HALT_COMPILER();');
+	$phar->setStub('<?php echo "PocketMine-MP plugin ' . $metadata["name"] . ' v' . $metadata["version"] . '\nThis file has been generated using DevTools v" . $version . " at ' . date("r") . '\n----------------\n";if(extension_loaded("phar")){$phar = new \Phar(__FILE__);foreach($phar->getMetadata() as $key => $value){echo ucfirst($key).": ".(is_array($value) ? implode(", ", $value):$value)."\n";}} __HALT_COMPILER();');
 }
 
 $phar->setSignatureAlgorithm(\Phar::SHA1);
@@ -95,7 +95,7 @@ foreach(new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($folderPa
 	if(strlen($path) > $maxLen){
 		$maxLen = strlen($path);
 	}
-	echo "\r[".(++$count)."] ".str_pad($path, $maxLen, " ");
+	echo "\r[" . (++$count) . "] " . str_pad($path, $maxLen, " ");
 }
 
 $phar->stopBuffering();

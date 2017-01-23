@@ -43,7 +43,7 @@ class ExtractPluginCommand extends DevToolsCommand{
 		}
 
 		if(count($args) === 0){
-			$sender->sendMessage(TextFormat::RED . "Usage: ".$this->usageMessage);
+			$sender->sendMessage(TextFormat::RED . "Usage: " . $this->usageMessage);
 			return true;
 		}
 
@@ -55,11 +55,11 @@ class ExtractPluginCommand extends DevToolsCommand{
 		$description = $plugin->getDescription();
 
 		if(!($plugin->getPluginLoader() instanceof PharPluginLoader)){
-			$sender->sendMessage(TextFormat::RED . "Plugin ".$description->getName()." is not in Phar structure.");
+			$sender->sendMessage(TextFormat::RED . "Plugin " . $description->getName() . " is not in Phar structure.");
 			return true;
 		}
 
-		$folderPath = $this->getPlugin()->getDataFolder() . DIRECTORY_SEPARATOR . $description->getName()."_v".$description->getVersion()."/";
+		$folderPath = $this->getPlugin()->getDataFolder() . DIRECTORY_SEPARATOR . $description->getName() . "_v" . $description->getVersion() . "/";
 		if(file_exists($folderPath)){
 			$sender->sendMessage("Plugin already exists, overwriting...");
 		}else{
@@ -76,7 +76,7 @@ class ExtractPluginCommand extends DevToolsCommand{
 			@mkdir(dirname($folderPath . str_replace($pharPath, "", $path)), 0755, true);
 			file_put_contents($folderPath . str_replace($pharPath, "", $path), file_get_contents($path));
 		}
-		$sender->sendMessage("Source plugin ".$description->getName() ." v".$description->getVersion()." has been created on ".$folderPath);
+		$sender->sendMessage("Source plugin " . $description->getName() . " v" . $description->getVersion() . " has been created on " . $folderPath);
 		return true;
 	}
 }
