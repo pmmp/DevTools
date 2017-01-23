@@ -2,7 +2,7 @@
 
 /*
  * DevTools plugin for PocketMine-MP
- * Copyright (C) 2014 PocketMine Team <https://github.com/PocketMine/DevTools>
+ * Copyright (C) 2014, 2017 PocketMine Team <https://github.com/PocketMine/DevTools>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -19,7 +19,9 @@ namespace DevTools\commands;
 
 use DevTools\DevTools;
 use pocketmine\command\Command;
+use pocketmine\command\CommandSender;
 use pocketmine\command\PluginIdentifiableCommand;
+use pocketmine\event\TranslationContainer;
 
 abstract class DevToolsCommand extends Command implements PluginIdentifiableCommand{
 	/** @var \pocketmine\plugin\Plugin */
@@ -33,5 +35,9 @@ abstract class DevToolsCommand extends Command implements PluginIdentifiableComm
 
 	public function getPlugin(){
 		return $this->owningPlugin;
+	}
+
+	public function sendUsage(CommandSender $sender){
+		$sender->sendMessage(new TranslationContainer("commands.generic.usage", [$this->usageMessage]));
 	}
 }

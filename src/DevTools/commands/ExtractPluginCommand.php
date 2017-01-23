@@ -2,7 +2,7 @@
 
 /*
  * DevTools plugin for PocketMine-MP
- * Copyright (C) 2014 PocketMine Team <https://github.com/PocketMine/DevTools>
+ * Copyright (C) 2014, 2017 PocketMine Team <https://github.com/PocketMine/DevTools>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -34,16 +34,12 @@ class ExtractPluginCommand extends DevToolsCommand{
 	}
 
 	public function execute(CommandSender $sender, $commandLabel, array $args){
-		if(!$this->getPlugin()->isEnabled()){
-			return false;
-		}
-
 		if(!$this->testPermission($sender)){
 			return false;
 		}
 
 		if(count($args) === 0){
-			$sender->sendMessage(TextFormat::RED . "Usage: " . $this->usageMessage);
+			$this->sendUsage($sender);
 			return true;
 		}
 
