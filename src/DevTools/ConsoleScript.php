@@ -51,8 +51,8 @@ if(file_exists($relativePath . "plugin.yml")){
 	$metadata = [];
 }
 
-if(file_exists($opts["relative"] . "/" . $stubPath)){
-	echo "Using stub " . $opts["relative"] . "/" . $stubPath . "\n";
+if(file_exists($relativePath. $stubPath)){
+	echo "Using stub " . $relativePath . $stubPath . "\n";
 	$phar->setStub('<?php require("phar://" . __FILE__ . "/' . $stubPath . '"); __HALT_COMPILER();');
 }elseif(isset($opts["entry"])){
 	$entry = addslashes(str_replace("\\", "/", $opts["entry"]));
