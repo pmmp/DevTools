@@ -44,13 +44,6 @@ if(!is_dir($folderPath)){
 echo "\nCreating " . $pharName . "...\n";
 $phar = new \Phar($pharName);
 
-if(file_exists($relativePath . "plugin.yml")){
-	$metadata = yaml_parse_file($relativePath . "plugin.yml");
-}else{
-	echo "No plugin.yml found in relative path" . PHP_EOL;
-	$metadata = [];
-}
-
 if(file_exists($relativePath . $stubPath)){
 	echo "Using stub " . $relativePath . $stubPath . "\n";
 	$phar->setStub('<?php require("phar://" . __FILE__ . "/' . $stubPath . '"); __HALT_COMPILER();');
