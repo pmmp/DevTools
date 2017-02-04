@@ -49,7 +49,7 @@ class MakePluginCommand extends DevToolsCommand{
 				"name" => "FolderPluginLoader",
 				"version" => "1.0.1",
 				"main" => "FolderPluginLoader\\Main",
-				"api" => ["1.0.0", "2.0.0"],
+				"api" => ["1.0.0", "2.0.0", "3.0.0-ALPHA3"],
 				"depend" => [],
 				"description" => "Loader of folder plugins",
 				"authors" => ["PocketMine Team"],
@@ -60,7 +60,7 @@ class MakePluginCommand extends DevToolsCommand{
 			$phar->setSignatureAlgorithm(\Phar::SHA1);
 			$phar->startBuffering();
 
-			$phar->addFromString("plugin.yml", "name: FolderPluginLoader\nversion: 1.0.1\nmain: FolderPluginLoader\\Main\napi: [1.0.0, 2.0.0]\nload: STARTUP\n");
+			$phar->addFromString("plugin.yml", "name: FolderPluginLoader\nversion: 1.0.1\nmain: FolderPluginLoader\\Main\napi: [1.0.0, 2.0.0, 3.0.0-ALPHA3]\nload: STARTUP\n");
 			$phar->addFile($this->getPlugin()->getFile() . "src/FolderPluginLoader/FolderPluginLoader.php", "src/FolderPluginLoader/FolderPluginLoader.php");
 			$phar->addFile($this->getPlugin()->getFile() . "src/FolderPluginLoader/Main.php", "src/FolderPluginLoader/Main.php");
 
