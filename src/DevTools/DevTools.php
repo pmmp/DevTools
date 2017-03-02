@@ -22,7 +22,7 @@ use FolderPluginLoader\FolderPluginLoader;
 use pocketmine\command\Command;
 use pocketmine\command\CommandExecutor;
 use pocketmine\command\CommandSender;
-use pocketmine\network\protocol\Info;
+use pocketmine\network\mcpe\protocol\ProtocolInfo;
 use pocketmine\permission\Permission;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
@@ -213,7 +213,7 @@ class DevTools extends PluginBase implements CommandExecutor{
 			"version" => $server->getPocketMineVersion(),
 			"api" => $server->getApiVersion(),
 			"minecraft" => $server->getVersion(),
-			"protocol" => Info::CURRENT_PROTOCOL,
+			"protocol" => ProtocolInfo::CURRENT_PROTOCOL,
 			"creationDate" => time()
 		]);
 		$phar->setStub('<?php define("pocketmine\\\\PATH", "phar://". __FILE__ ."/"); require_once("phar://". __FILE__ ."/src/pocketmine/PocketMine.php");  __HALT_COMPILER();');
