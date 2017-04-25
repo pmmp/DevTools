@@ -22,7 +22,6 @@ use FolderPluginLoader\FolderPluginLoader;
 use pocketmine\command\Command;
 use pocketmine\command\CommandExecutor;
 use pocketmine\command\CommandSender;
-use pocketmine\network\mcpe\protocol\ProtocolInfo;
 use pocketmine\permission\Permission;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
@@ -208,14 +207,23 @@ class DevTools extends PluginBase implements CommandExecutor{
 			@unlink($pharPath);
 		}
 		$phar = new \Phar($pharPath);
-		$phar->setMetadata([
+
+		$metadata = [
 			"name" => $server->getName(),
 			"version" => $server->getPocketMineVersion(),
 			"api" => $server->getApiVersion(),
 			"minecraft" => $server->getVersion(),
-			"protocol" => ProtocolInfo::CURRENT_PROTOCOL,
 			"creationDate" => time()
-		]);
+		];
+
+		if(version_compare($server->getApiVersion(), "3.0.0-ALPHA5") >= 0){
+			$metadata["protocol"] = \pocketmine\network\mcpe\protocol\ProtocolInfo::CURRENT_PROTOCOL;
+		}else{
+			$metadata["protocol"] = \pocketmine\network\protocol\Info::CURRENT_PROTOCOL;
+		}
+
+		$phar->setMetadata($metadata);
+
 		$phar->setStub('<?php define("pocketmine\\\\PATH", "phar://". __FILE__ ."/"); require_once("phar://". __FILE__ ."/src/pocketmine/PocketMine.php");  __HALT_COMPILER();');
 		$phar->setSignatureAlgorithm(\Phar::SHA1);
 		$phar->startBuffering();
