@@ -105,7 +105,7 @@ class DevTools extends PluginBase implements CommandExecutor{
 		$pharPath = $this->getDataFolder() . DIRECTORY_SEPARATOR . "FolderPluginLoader.phar";
 		if(file_exists($pharPath)){
 			$sender->sendMessage("Phar plugin already exists, overwriting...");
-			@unlink($pharPath);
+			\Phar::unlinkArchive($pharPath);
 		}
 		$phar = new \Phar($pharPath);
 		$phar->setMetadata([
@@ -154,7 +154,7 @@ class DevTools extends PluginBase implements CommandExecutor{
 		$pharPath = $this->getDataFolder() . DIRECTORY_SEPARATOR . $description->getName() . "_v" . $description->getVersion() . ".phar";
 		if(file_exists($pharPath)){
 			$sender->sendMessage("Phar plugin already exists, overwriting...");
-			@unlink($pharPath);
+			\Phar::unlinkArchive($pharPath);
 		}
 		$phar = new \Phar($pharPath);
 		$phar->setMetadata([
@@ -204,7 +204,7 @@ class DevTools extends PluginBase implements CommandExecutor{
 		$pharPath = $this->getDataFolder() . DIRECTORY_SEPARATOR . $server->getName() . "_" . $server->getPocketMineVersion() . ".phar";
 		if(file_exists($pharPath)){
 			$sender->sendMessage("Phar file already exists, overwriting...");
-			@unlink($pharPath);
+			\Phar::unlinkArchive($pharPath);
 		}
 		$phar = new \Phar($pharPath);
 
