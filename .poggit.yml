@@ -4,4 +4,5 @@ projects:
     path: ""
     stub: "stub.php"
     icon: devtools.png
+    compressBuilds: false
 ...
