@@ -21,7 +21,7 @@ $opts = getopt("", ["make:", "relative:", "out:", "entry:", "compress", "stub:"]
 
 if(!isset($opts["make"])){
 	echo "== PocketMine-MP DevTools CLI interface ==\n\n";
-	echo "Usage: " . PHP_BINARY . " -dphar.readonly=0 " . $argv[0] . " --make <sourceFolder> --relative <relativePath> --entry \"relativeSourcePath.php\" --out <pharName.phar>\n";
+	echo "Usage: " . PHP_BINARY . " -dphar.readonly=0 " . $argv[0] . " --make <sourceFolder1[,sourceFolder2[,sourceFolder3...]]> --relative <relativePath> --entry \"relativeSourcePath.php\" --out <pharName.phar>\n";
 	exit(0);
 }
 
@@ -30,14 +30,33 @@ if(ini_get("phar.readonly") == 1){
 	exit(1);
 }
 
-$folderPath = rtrim(str_replace("\\", "/", realpath($opts["make"])), "/") . "/";
-$relativePath = isset($opts["relative"]) ? rtrim(str_replace("\\", "/", realpath($opts["relative"])), "/") . "/" : $folderPath;
+$makePaths = explode(",", $opts["make"]);
+array_walk($makePaths, function(&$path, $key){
+	$realPath = realpath($path);
+	if($realPath === false){
+		echo "[ERROR] make directory `$path` does not exist or permission denied" . PHP_EOL;
+		exit(1);
+	}
+	$path = rtrim(str_replace("\\", "/", $realPath), "/") . "/";
+});
+
+$relativePath = "";
+if(!isset($opts["relative"])){
+	if(count($makePaths) > 1){
+		echo "You must specify a relative path with --relative <path> to be able to include multiple directories" . PHP_EOL;
+		exit(1);
+	}else{
+		$relativePath = $makePaths[0];
+	}
+}else{
+	$relativePath = rtrim(str_replace("\\", "/", realpath($opts["relative"])), "/") . "/";
+}
+
 $pharName = $opts["out"] ?? "output.phar";
 $stubPath = $opts["stub"] ?? "stub.php";
 
-
-if(!is_dir($folderPath)){
-	echo $folderPath . " is not a folder\n";
+if(!is_dir($relativePath)){
+	echo $relativePath . " is not a folder\n";
 	exit(1);
 }
 
@@ -79,16 +98,18 @@ $phar->startBuffering();
 echo "Adding files...\n";
 $maxLen = 0;
 $count = 0;
-foreach(new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($folderPath)) as $file){
-	$path = rtrim(str_replace(["\\", $relativePath], ["/", ""], $file), "/");
-	if($path{0} === "." or strpos($path, "/.") !== false){
-		continue;
+foreach($makePaths as $folderPath){
+	foreach(new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($folderPath)) as $file){
+		$path = rtrim(str_replace(["\\", $relativePath], ["/", ""], $file), "/");
+		if($path{0} === "." or strpos($path, "/.") !== false){
+			continue;
+		}
+		$phar->addFile($file, $path);
+		if(strlen($path) > $maxLen){
+			$maxLen = strlen($path);
+		}
+		echo "\r[" . (++$count) . "] " . str_pad($path, $maxLen, " ");
 	}
-	$phar->addFile($file, $path);
-	if(strlen($path) > $maxLen){
-		$maxLen = strlen($path);
-	}
-	echo "\r[" . (++$count) . "] " . str_pad($path, $maxLen, " ");
 }
 
 $phar->stopBuffering();

@@ -230,9 +230,9 @@ class DevTools extends PluginBase implements CommandExecutor{
 
 		$filePath = substr(\pocketmine\PATH, 0, 7) === "phar://" ? \pocketmine\PATH : realpath(\pocketmine\PATH) . "/";
 		$filePath = rtrim(str_replace("\\", "/", $filePath), "/") . "/";
-		foreach(new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($filePath . "src")) as $file){
+		foreach(new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($filePath)) as $file){
 			$path = ltrim(str_replace(["\\", $filePath], ["/", ""], $file), "/");
-			if($path{0} === "." or strpos($path, "/.") !== false or substr($path, 0, 4) !== "src/"){
+			if($path{0} === "." or strpos($path, "/.") !== false or (substr($path, 0, 4) !== "src/" and substr($path, 0, 7) !== "vendor/")){
 				continue;
 			}
 			$phar->addFile($file, $path);
