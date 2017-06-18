@@ -18,6 +18,7 @@
 namespace DevTools;
 
 use DevTools\commands\ExtractPluginCommand;
+use DevTools\commands\GeneratePluginCommand;
 use FolderPluginLoader\FolderPluginLoader;
 use pocketmine\command\Command;
 use pocketmine\command\CommandExecutor;
@@ -33,7 +34,9 @@ use pocketmine\utils\TextFormat;
 class DevTools extends PluginBase implements CommandExecutor{
 
 	public function onLoad(){
-		$this->getServer()->getCommandMap()->register("devtools", new ExtractPluginCommand($this));
+		$map = $this->getServer()->getCommandMap();
+		$map->register("devtools", new ExtractPluginCommand($this));
+		$map->register("devtools", new GeneratePluginCommand($this));
 	}
 
 	public function onEnable(){

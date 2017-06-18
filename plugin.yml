@@ -44,3 +44,7 @@ permissions:
        devtools.command.checkperm.other:
         default: op
         description: "Allows checking others permission value"
+     devtools.command.genplugin:
+      default: op
+      description: "Allows the user to generate skeleton files for a plugin"
+
