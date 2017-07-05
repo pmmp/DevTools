@@ -31,7 +31,7 @@ class GeneratePluginCommand extends DevToolsCommand{
 		$this->setPermission("devtools.command.genplugin");
 	}
 
-	public function execute(CommandSender $sender, $commandLabel, array $args){
+	public function execute(CommandSender $sender, string $commandLabel, array $args){
 		if(!$this->getPlugin()->isEnabled()){
 			return false;
 		}

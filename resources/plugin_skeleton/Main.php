@@ -12,7 +12,7 @@ class Main extends PluginBase{
 		$this->getLogger()->info("Hello World!");
 	}
 
-	public function onCommand(CommandSender $sender, Command $command, $label, array $args){
+	public function onCommand(CommandSender $sender, Command $command, string $label, array $args) : bool{
 		switch($command->getName()){
 			case "examplecommand":
 				$sender->sendMessage("Example command output");
