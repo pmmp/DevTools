@@ -66,7 +66,7 @@ class DevTools extends PluginBase implements CommandExecutor{
 		}
 	}
 
-	private function permissionCheckCommand(CommandSender $sender, Command $command, $label, array $args){
+	private function permissionCheckCommand(CommandSender $sender, Command $command, string $label, array $args) : bool{
 		$target = $sender;
 		if(!isset($args[0])){
 			return false;
@@ -104,7 +104,7 @@ class DevTools extends PluginBase implements CommandExecutor{
 		}
 	}
 
-	private function makePluginLoader(CommandSender $sender, Command $command, $label, array $args){
+	private function makePluginLoader(CommandSender $sender, Command $command, string $label, array $args) : bool{
 		$pharPath = $this->getDataFolder() . DIRECTORY_SEPARATOR . "FolderPluginLoader.phar";
 		if(file_exists($pharPath)){
 			$sender->sendMessage("Phar plugin already exists, overwriting...");
@@ -141,7 +141,7 @@ class DevTools extends PluginBase implements CommandExecutor{
 		return true;
 	}
 
-	private function makePluginCommand(CommandSender $sender, Command $command, $label, array $args){
+	private function makePluginCommand(CommandSender $sender, Command $command, string $label, array $args) : bool{
 		$pluginName = trim(implode(" ", $args));
 		if($pluginName === "" or !(($plugin = Server::getInstance()->getPluginManager()->getPlugin($pluginName)) instanceof Plugin)){
 			$sender->sendMessage(TextFormat::RED . "Invalid plugin name, check the name case.");
@@ -202,7 +202,7 @@ class DevTools extends PluginBase implements CommandExecutor{
 		return true;
 	}
 
-	private function makeServerCommand(CommandSender $sender, Command $command, $label, array $args){
+	private function makeServerCommand(CommandSender $sender, Command $command, string $label, array $args) : bool{
 		$server = $sender->getServer();
 		$pharPath = $this->getDataFolder() . DIRECTORY_SEPARATOR . $server->getName() . "_" . $server->getPocketMineVersion() . ".phar";
 		if(file_exists($pharPath)){
