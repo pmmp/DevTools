@@ -44,9 +44,9 @@ class FolderPluginLoader implements PluginLoader{
 	 *
 	 * @param string $file
 	 *
-	 * @return Plugin
+	 * @return Plugin|null
 	 */
-	public function loadPlugin($file){
+	public function loadPlugin(string $file){
 		if(is_dir($file) and file_exists($file . "/plugin.yml") and file_exists($file . "/src/")){
 			if(($description = $this->getPluginDescription($file)) instanceof PluginDescription){
 				MainLogger::getLogger()->info(TextFormat::LIGHT_PURPLE . "Loading source plugin " . $description->getFullName());
@@ -82,9 +82,9 @@ class FolderPluginLoader implements PluginLoader{
 	 *
 	 * @param string $file
 	 *
-	 * @return PluginDescription
+	 * @return null|PluginDescription
 	 */
-	public function getPluginDescription($file){
+	public function getPluginDescription(string $file){
 		if(is_dir($file) and file_exists($file . "/plugin.yml")){
 			$yaml = @file_get_contents($file . "/plugin.yml");
 			if($yaml != ""){
@@ -100,7 +100,7 @@ class FolderPluginLoader implements PluginLoader{
 	 *
 	 * @return string
 	 */
-	public function getPluginFilters(){
+	public function getPluginFilters() : string{
 		return "/[^\\.]/";
 	}
 
