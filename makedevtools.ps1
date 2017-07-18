@@ -1,0 +1,1 @@
+..\..\bin\php\php.exe ./src/DevTools/ConsoleScript.php --make . --relative . --out ../DevTools.phar
