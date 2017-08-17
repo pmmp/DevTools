@@ -41,19 +41,19 @@ commands:
   description: "Skeleton plugin example command"
   #Usage message shown to the user if they type the command in incorrectly.
   usage: "/examplecommand"
-  #Permission required to execute the command. This could be `op`, `notop`, `true`, `false`, or a custom permission of your own (see below)
-  permission: true
+  #Permission required to execute the command. This should be the name of a permission defined in the section below.
+  permission: skeleton.command
 
 #Define permissions used in your plugin here. You can check whether permissibles have permissions in your plugin to allow or disallow actions such as command execution.
-#permissions:
+permissions:
  #Root permission node
- #skeleton:
+ skeleton:
   #Default state of this permission. `op` means that only server operators will have this permission by default.
-  #default: true
+  default: true
   #Description of what the permission does or doesn't allow.
-  #description: "Example root permission node"
+  description: "Example root permission node"
   #Child permission nodes. If the parent permission node is true, the children will have the values set here. If false, all child permissions will be inverted.
-  #children:
-   #skeleton.child:
-    #default: true
-    #description: "Example child permission node"
+  children:
+   skeleton.command:
+    default: true
+    description: "Allows the use of /examplecommand"
