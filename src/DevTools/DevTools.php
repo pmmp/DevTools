@@ -23,6 +23,7 @@ use FolderPluginLoader\FolderPluginLoader;
 use pocketmine\command\Command;
 use pocketmine\command\CommandExecutor;
 use pocketmine\command\CommandSender;
+use pocketmine\network\mcpe\protocol\ProtocolInfo;
 use pocketmine\permission\Permission;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
@@ -155,12 +156,8 @@ class DevTools extends PluginBase implements CommandExecutor{
 		}
 
 		$pharPath = $this->getDataFolder() . DIRECTORY_SEPARATOR . $description->getName() . "_v" . $description->getVersion() . ".phar";
-		if(file_exists($pharPath)){
-			$sender->sendMessage("Phar plugin already exists, overwriting...");
-			\Phar::unlinkArchive($pharPath);
-		}
-		$phar = new \Phar($pharPath);
-		$phar->setMetadata([
+
+		$metadata = [
 			"name" => $description->getName(),
 			"version" => $description->getVersion(),
 			"main" => $description->getMain(),
@@ -170,84 +167,100 @@ class DevTools extends PluginBase implements CommandExecutor{
 			"authors" => $description->getAuthors(),
 			"website" => $description->getWebsite(),
 			"creationDate" => time()
-		]);
+		];
+
 		if($description->getName() === "DevTools"){
-			$phar->setStub('<?php require("phar://". __FILE__ ."/src/DevTools/ConsoleScript.php"); __HALT_COMPILER();');
+			$stub = '<?php require("phar://". __FILE__ ."/src/DevTools/ConsoleScript.php"); __HALT_COMPILER();';
 		}else{
-			$phar->setStub('<?php echo "PocketMine-MP plugin ' . $description->getName() . ' v' . $description->getVersion() . '\nThis file has been generated using DevTools v' . $this->getDescription()->getVersion() . ' at ' . date("r") . '\n----------------\n";if(extension_loaded("phar")){$phar = new \Phar(__FILE__);foreach($phar->getMetadata() as $key => $value){echo ucfirst($key).": ".(is_array($value) ? implode(", ", $value):$value)."\n";}} __HALT_COMPILER();');
+			$stub = '<?php echo "PocketMine-MP plugin ' . $description->getName() . ' v' . $description->getVersion() . '\nThis file has been generated using DevTools v' . $this->getDescription()->getVersion() . ' at ' . date("r") . '\n----------------\n";if(extension_loaded("phar")){$phar = new \Phar(__FILE__);foreach($phar->getMetadata() as $key => $value){echo ucfirst($key).": ".(is_array($value) ? implode(", ", $value):$value)."\n";}} __HALT_COMPILER();';
 		}
-		$phar->setSignatureAlgorithm(\Phar::SHA1);
+
 		$reflection = new \ReflectionClass("pocketmine\\plugin\\PluginBase");
 		$file = $reflection->getProperty("file");
 		$file->setAccessible(true);
 		$filePath = rtrim(str_replace("\\", "/", $file->getValue($plugin)), "/") . "/";
-		$phar->startBuffering();
-		foreach(new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($filePath)) as $file){
-			$path = ltrim(str_replace(["\\", $filePath], ["/", ""], $file), "/");
-			if($path{0} === "." or strpos($path, "/.") !== false){
-				continue;
-			}
-			$phar->addFile($file, $path);
-			$sender->sendMessage("[DevTools] Adding $path");
-		}
 
-		foreach($phar as $file => $finfo){
-			/** @var \PharFileInfo $finfo */
-			if($finfo->getSize() > (1024 * 512)){
-				$finfo->compress(\Phar::GZ);
-			}
-		}
-		$phar->stopBuffering();
+		$this->buildPhar($sender, $pharPath, $filePath, [], $metadata, $stub, \Phar::SHA1);
+
 		$sender->sendMessage("Phar plugin " . $description->getName() . " v" . $description->getVersion() . " has been created on " . $pharPath);
 		return true;
 	}
 
 	private function makeServerCommand(CommandSender $sender, Command $command, string $label, array $args) : bool{
+		if(strpos(\pocketmine\PATH, "phar://") === 0){
+			$sender->sendMessage(TextFormat::RED . "This command can only be used on a server running from source code");
+			return true;
+		}
+
 		$server = $sender->getServer();
 		$pharPath = $this->getDataFolder() . DIRECTORY_SEPARATOR . $server->getName() . "_" . $server->getPocketMineVersion() . ".phar";
-		if(file_exists($pharPath)){
-			$sender->sendMessage("Phar file already exists, overwriting...");
-			\Phar::unlinkArchive($pharPath);
-		}
-		$phar = new \Phar($pharPath);
 
 		$metadata = [
 			"name" => $server->getName(),
 			"version" => $server->getPocketMineVersion(),
 			"api" => $server->getApiVersion(),
 			"minecraft" => $server->getVersion(),
-			"creationDate" => time()
+			"creationDate" => time(),
+			"protocol" => ProtocolInfo::CURRENT_PROTOCOL
 		];
 
-		$metadata["protocol"] = \pocketmine\network\mcpe\protocol\ProtocolInfo::CURRENT_PROTOCOL;
+		$stub = '<?php require_once("phar://". __FILE__ ."/src/pocketmine/PocketMine.php");  __HALT_COMPILER();';
 
+		$filePath = realpath(\pocketmine\PATH) . "/";
+		$filePath = rtrim(str_replace("\\", "/", $filePath), "/") . "/";
+
+		$this->buildPhar($sender, $pharPath, $filePath, ['src', 'vendor'], $metadata, $stub, \Phar::SHA1);
+
+		$sender->sendMessage($server->getName() . " " . $server->getPocketMineVersion() . " Phar file has been created on " . $pharPath);
+
+		return true;
+	}
+
+	private function buildPhar(CommandSender $sender, string $pharPath, string $basePath, array $includedPaths, array $metadata, string $stub, int $signatureAlgo = \Phar::SHA1){
+		if(file_exists($pharPath)){
+			$sender->sendMessage("Phar file already exists, overwriting...");
+			\Phar::unlinkArchive($pharPath);
+		}
+
+		$sender->sendMessage("[DevTools] Adding files...");
+
+		$start = microtime(true);
+		$phar = new \Phar($pharPath);
 		$phar->setMetadata($metadata);
-
-		$phar->setStub('<?php require_once("phar://". __FILE__ ."/src/pocketmine/PocketMine.php");  __HALT_COMPILER();');
-		$phar->setSignatureAlgorithm(\Phar::SHA1);
+		$phar->setStub($stub);
+		$phar->setSignatureAlgorithm($signatureAlgo);
 		$phar->startBuffering();
 
-		$filePath = substr(\pocketmine\PATH, 0, 7) === "phar://" ? \pocketmine\PATH : realpath(\pocketmine\PATH) . "/";
-		$filePath = rtrim(str_replace("\\", "/", $filePath), "/") . "/";
-		foreach(new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($filePath)) as $file){
-			$path = ltrim(str_replace(["\\", $filePath], ["/", ""], $file), "/");
-			if($path{0} === "." or strpos($path, "/.") !== false or (substr($path, 0, 4) !== "src/" and substr($path, 0, 7) !== "vendor/")){
-				continue;
-			}
-			$phar->addFile($file, $path);
-			$sender->sendMessage("[DevTools] Adding $path");
+		function preg_quote_array(array $strings, string $delim = null) : array{
+			return array_map(function(string $str) use ($delim) : string{ return preg_quote($str, $delim); }, $strings);
 		}
+
+		//If paths contain any of these, they will be excluded
+		$excludedSubstrings = [
+			"/.", //"Hidden" files, git information etc
+			realpath($pharPath) //don't add the phar to itself
+		];
+
+		$regex = sprintf('/^(?!.*(%s))^%s(%s).*/i',
+			implode('|', preg_quote_array($excludedSubstrings, '/')), //String may not contain any of these substrings
+			preg_quote($basePath, '/'), //String must start with this path...
+			implode('|', preg_quote_array($includedPaths, '/')) //... and must be followed by one of these relative paths, if any were specified. If none, this will produce a null capturing group which will allow anything.
+		);
+
+		$count = count($phar->buildFromDirectory($basePath, $regex));
+		$sender->sendMessage("[DevTools] Added $count files");
+
+		$sender->sendMessage("[DevTools] Checking for compressible files...");
 		foreach($phar as $file => $finfo){
 			/** @var \PharFileInfo $finfo */
 			if($finfo->getSize() > (1024 * 512)){
+				$sender->sendMessage("[DevTools] Compressing " . $finfo->getFilename());
 				$finfo->compress(\Phar::GZ);
 			}
 		}
 		$phar->stopBuffering();
 
-		$sender->sendMessage($server->getName() . " " . $server->getPocketMineVersion() . " Phar file has been created on " . $pharPath);
-
-		return true;
+		$sender->sendMessage("[DevTools] Done in " . round(microtime(true) - $start, 3) . "s");
 	}
 
 }

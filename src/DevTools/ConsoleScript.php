@@ -15,66 +15,73 @@
  * GNU General Public License for more details.
 */
 
-const VERSION = "1.12.1";
+const VERSION = "1.12.2";
 
 $opts = getopt("", ["make:", "relative:", "out:", "entry:", "compress", "stub:"]);
 
 if(!isset($opts["make"])){
-	echo "== PocketMine-MP DevTools CLI interface ==\n\n";
-	echo "Usage: " . PHP_BINARY . " -dphar.readonly=0 " . $argv[0] . " --make <sourceFolder1[,sourceFolder2[,sourceFolder3...]]> --relative <relativePath> --entry \"relativeSourcePath.php\" --out <pharName.phar>\n";
+	echo "== PocketMine-MP DevTools CLI interface ==" . PHP_EOL . PHP_EOL;
+	echo "Usage: " . PHP_BINARY . " -dphar.readonly=0 " . $argv[0] . " --make <sourceFolder1[,sourceFolder2[,sourceFolder3...]]> --relative <relativePath> --entry \"relativeSourcePath.php\" --out <pharName.phar>" . PHP_EOL;
 	exit(0);
 }
 
 if(ini_get("phar.readonly") == 1){
-	echo "Set phar.readonly to 0 with -dphar.readonly=0\n";
+	echo "Set phar.readonly to 0 with -dphar.readonly=0" . PHP_EOL;
 	exit(1);
 }
 
-$makePaths = explode(",", $opts["make"]);
-array_walk($makePaths, function(&$path, $key){
+$includedPaths = explode(",", $opts["make"]);
+array_walk($includedPaths, function(&$path, $key){
 	$realPath = realpath($path);
 	if($realPath === false){
 		echo "[ERROR] make directory `$path` does not exist or permission denied" . PHP_EOL;
 		exit(1);
 	}
-	$path = rtrim(str_replace("\\", "/", $realPath), "/") . "/";
 });
 
-$relativePath = "";
+$basePath = "";
 if(!isset($opts["relative"])){
-	if(count($makePaths) > 1){
+	if(count($includedPaths) > 1){
 		echo "You must specify a relative path with --relative <path> to be able to include multiple directories" . PHP_EOL;
 		exit(1);
 	}else{
-		$relativePath = $makePaths[0];
+		$basePath = rtrim(str_replace("\\", "/", realpath(array_shift($includedPaths))), "/") . "/";
 	}
 }else{
-	$relativePath = rtrim(str_replace("\\", "/", realpath($opts["relative"])), "/") . "/";
+	$basePath = rtrim(str_replace("\\", "/", realpath($opts["relative"])), "/") . "/";
 }
 
 $pharName = $opts["out"] ?? "output.phar";
 $stubPath = $opts["stub"] ?? "stub.php";
 
-if(!is_dir($relativePath)){
-	echo $relativePath . " is not a folder\n";
+if(!is_dir($basePath)){
+	echo $basePath . " is not a folder" . PHP_EOL;
 	exit(1);
 }
 
-echo "\nCreating " . $pharName . "...\n";
+echo PHP_EOL;
+
+if(file_exists($pharName)){
+	echo "$pharName already exists, overwriting..." . PHP_EOL;
+	@unlink($pharName);
+}
+
+echo "Creating " . $pharName . "..." . PHP_EOL;
+$start = microtime(true);
 $phar = new \Phar($pharName);
 
-if(file_exists($relativePath . $stubPath)){
-	echo "Using stub " . $relativePath . $stubPath . "\n";
+if(file_exists($basePath . $stubPath)){
+	echo "Using stub " . $basePath . $stubPath . PHP_EOL;
 	$phar->setStub('<?php require("phar://" . __FILE__ . "/' . $stubPath . '"); __HALT_COMPILER();');
 }elseif(isset($opts["entry"])){
 	$entry = addslashes(str_replace("\\", "/", $opts["entry"]));
-	echo "Setting entry point to " . $entry . "\n";
+	echo "Setting entry point to " . $entry . PHP_EOL;
 	$phar->setStub('<?php require("phar://" . __FILE__ . "/' . $entry . '"); __HALT_COMPILER();');
 }else{
-	if(file_exists($relativePath . "plugin.yml")){
-		$metadata = yaml_parse_file($relativePath . "plugin.yml");
+	if(file_exists($basePath . "plugin.yml")){
+		$metadata = yaml_parse_file($basePath . "plugin.yml");
 	}else{
-		echo "Missing entry point or plugin.yml\n";
+		echo "Missing entry point or plugin.yml" . PHP_EOL;
 		exit(1);
 	}
 
@@ -95,24 +102,30 @@ if(file_exists($relativePath . $stubPath)){
 
 $phar->setSignatureAlgorithm(\Phar::SHA1);
 $phar->startBuffering();
-echo "Adding files...\n";
+echo "Adding files..." . PHP_EOL;
 $maxLen = 0;
 $count = 0;
-foreach($makePaths as $folderPath){
-	foreach(new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($folderPath)) as $file){
-		$path = rtrim(str_replace(["\\", $relativePath], ["/", ""], $file), "/");
-		if($path{0} === "." or strpos($path, "/.") !== false){
-			continue;
-		}
-		$phar->addFile($file, $path);
-		if(strlen($path) > $maxLen){
-			$maxLen = strlen($path);
-		}
-		echo "\r[" . (++$count) . "] " . str_pad($path, $maxLen, " ");
-	}
+
+function preg_quote_array(array $strings, string $delim = null) : array{
+	return array_map(function(string $str) use ($delim) : string{ return preg_quote($str, $delim); }, $strings);
 }
+
+//If paths contain any of these, they will be excluded
+$excludedSubstrings = [
+	"/.", //"Hidden" files, git information etc
+	$pharName //don't add the phar to itself
+];
+
+$regex = sprintf('/^(?!.*(%s))^%s(%s).*/i',
+	implode('|', preg_quote_array($excludedSubstrings, '/')), //String may not contain any of these substrings
+	preg_quote($basePath, '/'), //String must start with this path...
+	implode('|', preg_quote_array($includedPaths, '/')) //... and must be followed by one of these relative paths, if any were specified. If none, this will produce a null capturing group which will allow anything.
+);
+
+$count = count($phar->buildFromDirectory($basePath, $regex));
+echo "Added $count files" . PHP_EOL;
 
 $phar->stopBuffering();
 
-echo "\nDone!\n";
+echo PHP_EOL . "Done in " . round(microtime(true) - $start, 3) . "s" . PHP_EOL;
 exit(0);
