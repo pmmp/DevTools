@@ -216,6 +216,10 @@ class DevTools extends PluginBase implements CommandExecutor{
 		return true;
 	}
 
+	private function preg_quote_array(array $strings, string $delim = null) : array{
+		return array_map(function(string $str) use ($delim) : string{ return preg_quote($str, $delim); }, $strings);
+	}
+
 	private function buildPhar(CommandSender $sender, string $pharPath, string $basePath, array $includedPaths, array $metadata, string $stub, int $signatureAlgo = \Phar::SHA1){
 		if(file_exists($pharPath)){
 			$sender->sendMessage("Phar file already exists, overwriting...");
@@ -231,10 +235,6 @@ class DevTools extends PluginBase implements CommandExecutor{
 		$phar->setSignatureAlgorithm($signatureAlgo);
 		$phar->startBuffering();
 
-		function preg_quote_array(array $strings, string $delim = null) : array{
-			return array_map(function(string $str) use ($delim) : string{ return preg_quote($str, $delim); }, $strings);
-		}
-
 		//If paths contain any of these, they will be excluded
 		$excludedSubstrings = [
 			"/.", //"Hidden" files, git information etc
@@ -242,9 +242,9 @@ class DevTools extends PluginBase implements CommandExecutor{
 		];
 
 		$regex = sprintf('/^(?!.*(%s))^%s(%s).*/i',
-			implode('|', preg_quote_array($excludedSubstrings, '/')), //String may not contain any of these substrings
+			implode('|', $this->preg_quote_array($excludedSubstrings, '/')), //String may not contain any of these substrings
 			preg_quote($basePath, '/'), //String must start with this path...
-			implode('|', preg_quote_array($includedPaths, '/')) //... and must be followed by one of these relative paths, if any were specified. If none, this will produce a null capturing group which will allow anything.
+			implode('|', $this->preg_quote_array($includedPaths, '/')) //... and must be followed by one of these relative paths, if any were specified. If none, this will produce a null capturing group which will allow anything.
 		);
 
 		$count = count($phar->buildFromDirectory($basePath, $regex));
