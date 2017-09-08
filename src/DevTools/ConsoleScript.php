@@ -37,6 +37,9 @@ array_walk($includedPaths, function(&$path, $key){
 		echo "[ERROR] make directory `$path` does not exist or permission denied" . PHP_EOL;
 		exit(1);
 	}
+
+	//Convert to absolute path for base path detection
+	$path = rtrim(str_replace("\\", "/", $realPath), "/") . "/";
 });
 
 $basePath = "";
@@ -50,6 +53,13 @@ if(!isset($opts["relative"])){
 }else{
 	$basePath = rtrim(str_replace("\\", "/", realpath($opts["relative"])), "/") . "/";
 }
+
+//Convert included paths back to relative after we decide what the base path is
+$includedPaths = array_filter(array_map(function(string $path) use ($basePath) : string{
+	return str_replace($basePath, '', $path);
+}, $includedPaths), function(string $v) : bool{
+	return $v !== '';
+});
 
 $pharName = $opts["out"] ?? "output.phar";
 $stubPath = $opts["stub"] ?? "stub.php";
