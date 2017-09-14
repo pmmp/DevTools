@@ -1,7 +1,7 @@
 name: DevTools
 main: DevTools\DevTools
 version: 1.12.3.2
-api: [3.0.0-ALPHA7]
+api: [3.0.0-ALPHA7, 3.0.0-ALPHA8]
 load: STARTUP
 author: PocketMine Team
 description: Helps develop and distribute PocketMine-MP plugins
