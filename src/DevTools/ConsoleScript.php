@@ -15,7 +15,7 @@
  * GNU General Public License for more details.
 */
 
-const VERSION = "1.12.3.2";
+const VERSION = "1.12.4";
 
 $opts = getopt("", ["make:", "relative:", "out:", "entry:", "compress", "stub:"]);
 
