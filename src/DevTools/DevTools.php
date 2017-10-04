@@ -55,6 +55,25 @@ class DevTools extends PluginBase implements CommandExecutor{
 			case "makeplugin":
 				if(isset($args[0]) and $args[0] === "FolderPluginLoader"){
 					return $this->makePluginLoader($sender, $command, $label, $args);
+				}elseif(isset($args[0]) and $args[0] === "*"){
+					$plugins = $this->getServer()->getPluginManager()->getPlugins();
+					$succeeded = $failed = [];
+					foreach($plugins as $plugin){
+						if($this->makePluginCommand($sender, $command, $label, [$plugin->getName()])){
+							$succeeded[] = $plugin->getName();
+						}else{
+							$failed[] = $plugin->getName();
+						}
+					}
+					if(count($failed) > 0){
+						$sender->sendMessage(TextFormat::RED . count($failed) . " plugin"
+							. (count($failed) === 1 ? "" : "s") . " failed to build: " . implode(", ", $failed));
+					}
+					if(count($succeeded) > 0){
+						$sender->sendMessage(TextFormat::GREEN . count($succeeded) . "/" . count($plugins) . " plugin"
+							. (count($plugins) === 1 ? "" : "s") . " successfully built: " . implode(", ", $succeeded));
+					}
+					return true;
 				}else{
 					return $this->makePluginCommand($sender, $command, $label, $args);
 				}
@@ -146,13 +165,13 @@ class DevTools extends PluginBase implements CommandExecutor{
 		$pluginName = trim(implode(" ", $args));
 		if($pluginName === "" or !(($plugin = Server::getInstance()->getPluginManager()->getPlugin($pluginName)) instanceof Plugin)){
 			$sender->sendMessage(TextFormat::RED . "Invalid plugin name, check the name case.");
-			return true;
+			return false;
 		}
 		$description = $plugin->getDescription();
 
 		if(!($plugin->getPluginLoader() instanceof FolderPluginLoader)){
 			$sender->sendMessage(TextFormat::RED . "Plugin " . $description->getName() . " is not in folder structure.");
-			return true;
+			return false;
 		}
 
 		$pharPath = $this->getDataFolder() . DIRECTORY_SEPARATOR . $description->getName() . "_v" . $description->getVersion() . ".phar";
