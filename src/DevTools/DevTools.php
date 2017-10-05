@@ -59,7 +59,7 @@ class DevTools extends PluginBase implements CommandExecutor{
 					$plugins = $this->getServer()->getPluginManager()->getPlugins();
 					$succeeded = $failed = [];
 					foreach($plugins as $plugin){
-						if($this->makePluginCommand($sender, $command, $label, [$plugin->getName()])){
+						if(($plugin->getPluginLoader() instanceof FolderPluginLoader) && $this->makePluginCommand($sender, $command, $label, [$plugin->getName()])){
 							$succeeded[] = $plugin->getName();
 						}else{
 							$failed[] = $plugin->getName();
