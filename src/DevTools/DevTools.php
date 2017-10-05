@@ -58,8 +58,13 @@ class DevTools extends PluginBase implements CommandExecutor{
 				}elseif(isset($args[0]) and $args[0] === "*"){
 					$plugins = $this->getServer()->getPluginManager()->getPlugins();
 					$succeeded = $failed = [];
+					$skipped = 0;
 					foreach($plugins as $plugin){
-						if(($plugin->getPluginLoader() instanceof FolderPluginLoader) && $this->makePluginCommand($sender, $command, $label, [$plugin->getName()])){
+						if(!$plugin->getPluginLoader() instanceof FolderPluginLoader){
+							$skipped++;
+							continue;
+						}
+						if($this->makePluginCommand($sender, $command, $label, [$plugin->getName()])){
 							$succeeded[] = $plugin->getName();
 						}else{
 							$failed[] = $plugin->getName();
@@ -70,7 +75,7 @@ class DevTools extends PluginBase implements CommandExecutor{
 							. (count($failed) === 1 ? "" : "s") . " failed to build: " . implode(", ", $failed));
 					}
 					if(count($succeeded) > 0){
-						$sender->sendMessage(TextFormat::GREEN . count($succeeded) . "/" . count($plugins) . " plugin"
+						$sender->sendMessage(TextFormat::GREEN . count($succeeded) . "/" . (count($plugins) - $skipped) . " plugin"
 							. (count($plugins) === 1 ? "" : "s") . " successfully built: " . implode(", ", $succeeded));
 					}
 					return true;
