@@ -75,7 +75,8 @@ class DevTools extends PluginBase implements CommandExecutor{
 					}
 					return true;
 				}else{
-					return $this->makePluginCommand($sender, $command, $label, $args);
+					$this->makePluginCommand($sender, $command, $label, $args);
+					return true;
 				}
 			case "makeserver":
 				return $this->makeServerCommand($sender, $command, $label, $args);
