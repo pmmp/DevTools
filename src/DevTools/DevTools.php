@@ -76,7 +76,7 @@ class DevTools extends PluginBase implements CommandExecutor{
 					}
 					if(count($succeeded) > 0){
 						$sender->sendMessage(TextFormat::GREEN . count($succeeded) . "/" . (count($plugins) - $skipped) . " plugin"
-							. (count($plugins) === 1 ? "" : "s") . " successfully built: " . implode(", ", $succeeded));
+							. ((count($plugins) - $skipped) === 1 ? "" : "s") . " successfully built: " . implode(", ", $succeeded));
 					}
 					return true;
 				}else{
