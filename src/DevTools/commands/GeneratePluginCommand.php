@@ -53,13 +53,12 @@ class GeneratePluginCommand extends DevToolsCommand{
 			return true;
 		}
 
-		mkdir($directory . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . $author . DIRECTORY_SEPARATOR . $pluginName, 0755, true);
 
 		if(preg_match("/[^A-Za-z0-9_-]/", $pluginName) !== 0 or preg_match("/[^A-Za-z0-9_-]/", $author) !== 0){
 			$sender->sendMessage(TextFormat::RED . "Plugin name and author name must contain only letters, numbers, underscores and dashes.");
 		}
 
-		$namespace = $author . "\\" . $pluginName;
+		$namespace = self::correctNamespacePart($author) . "\\" . self::correctNamespacePart($pluginName);
 
 		$this->getPlugin()->saveResource("plugin_skeleton/plugin.yml", true);
 		$this->getPlugin()->saveResource("plugin_skeleton/Main.php", true);
@@ -73,9 +72,18 @@ class GeneratePluginCommand extends DevToolsCommand{
 
 		$mainClass = file_get_contents($this->getPlugin()->getDataFolder() . DIRECTORY_SEPARATOR . "plugin_skeleton" . DIRECTORY_SEPARATOR . "Main.php");
 		$mainClass = str_replace("#%{Namespace}", "namespace " . $namespace . ";", $mainClass);
-		file_put_contents($directory . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . $author . DIRECTORY_SEPARATOR . $pluginName .  DIRECTORY_SEPARATOR . "Main.php", $mainClass);
+
+		mkdir($mainDirectory = $directory . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . str_replace("\\", DIRECTORY_SEPARATOR, $namespace), 0755, true);
+		file_put_contents($mainDirectory .  DIRECTORY_SEPARATOR . "Main.php", $mainClass);
 
 		$sender->sendMessage("Created skeleton plugin $pluginName in " . $directory);
 		return true;
+	}
+
+	private static function correctNamespacePart(string $part) : string{
+		if(ctype_digit($part{0})){
+			$part = "_" . $part;
+		}
+		return str_replace("-", "_", $part);
 	}
 }
