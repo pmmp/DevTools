@@ -56,6 +56,7 @@ class GeneratePluginCommand extends DevToolsCommand{
 
 		if(preg_match("/[^A-Za-z0-9_-]/", $pluginName) !== 0 or preg_match("/[^A-Za-z0-9_-]/", $author) !== 0){
 			$sender->sendMessage(TextFormat::RED . "Plugin name and author name must contain only letters, numbers, underscores and dashes.");
+			return true;
 		}
 
 		$namespace = self::correctNamespacePart($author) . "\\" . self::correctNamespacePart($pluginName);
