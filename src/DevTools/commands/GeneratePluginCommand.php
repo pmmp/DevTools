@@ -52,7 +52,7 @@ class GeneratePluginCommand extends DevToolsCommand{
 			$sender->sendMessage(TextFormat::RED . "A plugin with this name already exists on the server. Please choose a different name or remove the other plugin.");
 			return true;
 		}
-
+		mkdir($directory, 0777, true);
 
 		if(preg_match("/[^A-Za-z0-9_-]/", $pluginName) !== 0 or preg_match("/[^A-Za-z0-9_-]/", $author) !== 0){
 			$sender->sendMessage(TextFormat::RED . "Plugin name and author name must contain only letters, numbers, underscores and dashes.");
