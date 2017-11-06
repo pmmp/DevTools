@@ -19,9 +19,10 @@
 - Restart the server. The plugin will be loaded
 
 ## Usage
-* _/makeplugin <pluginName>_: Creates a Phar plugin archive for its distribution
+* _/makeplugin \<pluginName\>_: Creates a Phar plugin archive for its distribution
+* _/makeplugin *_: Creates Phar plugin archives for all loaded plugins
 * _/makeserver_: Creates a PocketMine-MP Phar archive
-* _/checkperm <node> [playerName]_: Checks a permission node
+* _/checkperm \<node\> [playerName]_: Checks a permission node
 
 ## Using ConsoleScript to build a DevTools phar from source code
 Contrary to popular assumption, this is very simple. Assuming you have a php executable in your PATH variable, cd into the DevTools directory (the folder where plugin.yml is located) and simply run the following:
