@@ -46,38 +46,46 @@ class GeneratePluginCommand extends DevToolsCommand{
 		}
 
 		list($pluginName, $author) = $args;
-		$directory = $this->getPlugin()->getServer()->getPluginPath() . DIRECTORY_SEPARATOR . $pluginName;
-
-		if($this->getPlugin()->getServer()->getPluginManager()->getPlugin($pluginName) !== null or file_exists($directory)){
-			$sender->sendMessage(TextFormat::RED . "A plugin with this name already exists on the server. Please choose a different name or remove the other plugin.");
-			return true;
-		}
-		mkdir($directory, 0777, true);
-
 		if(preg_match("/[^A-Za-z0-9_-]/", $pluginName) !== 0 or preg_match("/[^A-Za-z0-9_-]/", $author) !== 0){
 			$sender->sendMessage(TextFormat::RED . "Plugin name and author name must contain only letters, numbers, underscores and dashes.");
 			return true;
 		}
 
+		$rootDirectory = $this->getPlugin()->getServer()->getPluginPath() . $pluginName . DIRECTORY_SEPARATOR;
+		if($this->getPlugin()->getServer()->getPluginManager()->getPlugin($pluginName) !== null or file_exists($rootDirectory)){
+			$sender->sendMessage(TextFormat::RED . "A plugin with this name already exists on the server. Please choose a different name or remove the other plugin.");
+			return true;
+		}
+
 		$namespace = self::correctNamespacePart($author) . "\\" . self::correctNamespacePart($pluginName);
+		$namespacePath = "src" . DIRECTORY_SEPARATOR . str_replace("\\", DIRECTORY_SEPARATOR, $namespace) . DIRECTORY_SEPARATOR;
+
+		mkdir($rootDirectory . $namespacePath, 0755, true); //create all the needed directories
+
+		$pluginSkeletonTemplateDir = $this->getPlugin()->getDataFolder() . DIRECTORY_SEPARATOR . "plugin_skeleton" . DIRECTORY_SEPARATOR;
 
 		$this->getPlugin()->saveResource("plugin_skeleton/plugin.yml", true);
 		$this->getPlugin()->saveResource("plugin_skeleton/Main.php", true);
 
-		$pluginYml = file_get_contents($this->getPlugin()->getDataFolder() . DIRECTORY_SEPARATOR . "plugin_skeleton" . DIRECTORY_SEPARATOR . "plugin.yml");
-		$pluginYml = str_replace("%{PluginName}", $pluginName, $pluginYml);
-		$pluginYml = str_replace("%{ApiVersion}", $this->getPlugin()->getServer()->getApiVersion(), $pluginYml);
-		$pluginYml = str_replace("%{AuthorName}", $author, $pluginYml);
-		$pluginYml = str_replace("%{Namespace}", $namespace, $pluginYml);
-		file_put_contents($directory . DIRECTORY_SEPARATOR . "plugin.yml", $pluginYml);
+		$replace = [
+			"%{PluginName}" => $pluginName,
+			"%{ApiVersion}" => $this->getPlugin()->getServer()->getApiVersion(),
+			"%{AuthorName}" => $author,
+			"%{Namespace}" => $namespace
+		];
 
-		$mainClass = file_get_contents($this->getPlugin()->getDataFolder() . DIRECTORY_SEPARATOR . "plugin_skeleton" . DIRECTORY_SEPARATOR . "Main.php");
-		$mainClass = str_replace("#%{Namespace}", "namespace " . $namespace . ";", $mainClass);
+		file_put_contents($rootDirectory . "plugin.yml", str_replace(
+			array_keys($replace),
+			array_values($replace),
+			file_get_contents($pluginSkeletonTemplateDir . "plugin.yml")
+		));
 
-		mkdir($mainDirectory = $directory . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . str_replace("\\", DIRECTORY_SEPARATOR, $namespace), 0755, true);
-		file_put_contents($mainDirectory .  DIRECTORY_SEPARATOR . "Main.php", $mainClass);
+		file_put_contents($rootDirectory . $namespacePath . "Main.php", str_replace(
+			"#%{Namespace}", "namespace " . $namespace . ";",
+			file_get_contents($pluginSkeletonTemplateDir . "Main.php")
+		));
 
-		$sender->sendMessage("Created skeleton plugin $pluginName in " . $directory);
+		$sender->sendMessage("Created skeleton plugin $pluginName in " . $rootDirectory);
 		return true;
 	}
 
