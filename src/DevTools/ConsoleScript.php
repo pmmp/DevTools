@@ -84,7 +84,13 @@ if(file_exists($basePath . $stubPath)){
 	echo "Using stub " . $basePath . $stubPath . PHP_EOL;
 	$phar->setStub('<?php require("phar://" . __FILE__ . "/' . $stubPath . '"); __HALT_COMPILER();');
 }elseif(isset($opts["entry"])){
-	$entry = addslashes(str_replace("\\", "/", $opts["entry"]));
+	$realEntry = realpath($opts["entry"]);
+	if($realEntry === false){
+		die("Entry point not found");
+	}
+
+	$entry = addslashes(str_replace("\\", "/", $realEntry));
+	$entry = str_replace($basePath, "", $entry);
 	echo "Setting entry point to " . $entry . PHP_EOL;
 	$phar->setStub('<?php require("phar://" . __FILE__ . "/' . $entry . '"); __HALT_COMPILER();');
 }else{
