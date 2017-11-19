@@ -49,10 +49,12 @@ class FolderPluginLoader implements PluginLoader{
 	public function loadPlugin(string $file){
 		if(is_dir($file) and file_exists($file . "/plugin.yml") and file_exists($file . "/src/")){
 			if(($description = $this->getPluginDescription($file)) instanceof PluginDescription){
-				MainLogger::getLogger()->info(TextFormat::LIGHT_PURPLE . "Loading source plugin " . $description->getFullName());
+				$logger = $this->server->getLogger();
+
+				$logger->info(TextFormat::LIGHT_PURPLE . "Loading source plugin " . $description->getFullName());
 				$dataFolder = dirname($file) . DIRECTORY_SEPARATOR . $description->getName();
 				if(file_exists($dataFolder) and !is_dir($dataFolder)){
-					trigger_error("Projected dataFolder '" . $dataFolder . "' for " . $description->getName() . " exists and is not a directory", E_USER_WARNING);
+					$logger->warning("Projected dataFolder '" . $dataFolder . "' for source plugin " . $description->getName() . " exists and is not a directory");
 
 					return null;
 				}
@@ -67,7 +69,7 @@ class FolderPluginLoader implements PluginLoader{
 
 					return $plugin;
 				}else{
-					trigger_error("Couldn't load source plugin " . $description->getName() . ": main class not found", E_USER_WARNING);
+					$logger->warning("Couldn't load source plugin " . $description->getName() . ": main class not found");
 
 					return null;
 				}
