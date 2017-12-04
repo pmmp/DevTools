@@ -113,7 +113,24 @@ if(file_exists($basePath . $stubPath)){
 		"creationDate" => time()
 	]);
 
-	$phar->setStub('<?php echo "PocketMine-MP plugin ' . $metadata["name"] . ' v' . $metadata["version"] . '\nThis file has been generated using DevTools v" . $version . " at ' . date("r") . '\n----------------\n";if(extension_loaded("phar")){$phar = new \Phar(__FILE__);foreach($phar->getMetadata() as $key => $value){echo ucfirst($key).": ".(is_array($value) ? implode(", ", $value):$value)."\n";}} __HALT_COMPILER();');
+	$stub = '
+<?php
+echo "PocketMine-MP plugin %s v%s
+This file has been generated using DevTools v%s at %s
+----------------
+";
+
+if(extension_loaded("phar")){
+	$phar = new \Phar(__FILE__);
+	foreach($phar->getMetadata() as $key => $value){
+		echo ucfirst($key) . ": " . (is_array($value) ? implode(", ", $value) : $value) . "\n";
+	}
+}
+
+__HALT_COMPILER();
+';
+
+	$phar->setStub(sprintf($stub, $metadata["name"], $metadata["version"], VERSION, date("r")));
 }
 
 $phar->setSignatureAlgorithm(\Phar::SHA1);
