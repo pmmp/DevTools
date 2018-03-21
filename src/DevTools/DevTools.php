@@ -272,7 +272,11 @@ class DevTools extends PluginBase implements CommandExecutor{
 			implode('|', $this->preg_quote_array($includedPaths, '/')) //... and must be followed by one of these relative paths, if any were specified. If none, this will produce a null capturing group which will allow anything.
 		);
 
-		$count = count($phar->buildFromDirectory($basePath, $regex));
+		$directory = new \RecursiveDirectoryIterator($basePath, \FilesystemIterator::SKIP_DOTS | \FilesystemIterator::FOLLOW_SYMLINKS | \FileSystemIterator::CURRENT_AS_PATHNAME); //can't use fileinfo because of symlinks
+		$iterator = new \RecursiveIteratorIterator($directory);
+		$regexIterator = new \RegexIterator($iterator, $regex);
+
+		$count = count($phar->buildFromIterator($regexIterator, $basePath));
 		$sender->sendMessage("[DevTools] Added $count files");
 
 		$sender->sendMessage("[DevTools] Checking for compressible files...");
