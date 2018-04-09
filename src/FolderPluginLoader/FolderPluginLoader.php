@@ -106,6 +106,10 @@ class FolderPluginLoader implements PluginLoader{
 		return "/[^\\.]/";
 	}
 
+	public function canLoadPlugin(string $path) : bool{
+		return is_dir($path);
+	}
+
 	/**
 	 * @param PluginBase        $plugin
 	 * @param PluginDescription $description
