@@ -39,7 +39,7 @@ array_walk($includedPaths, function(&$path, $key){
 	}
 
 	//Convert to absolute path for base path detection
-	$path = rtrim(str_replace("\\", "/", $realPath), "/") . "/";
+	$path = rtrim($realPath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
 });
 
 $basePath = "";
@@ -48,10 +48,10 @@ if(!isset($opts["relative"])){
 		echo "You must specify a relative path with --relative <path> to be able to include multiple directories" . PHP_EOL;
 		exit(1);
 	}else{
-		$basePath = rtrim(str_replace("\\", "/", realpath(array_shift($includedPaths))), "/") . "/";
+		$basePath = rtrim(realpath(array_shift($includedPaths)), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
 	}
 }else{
-	$basePath = rtrim(str_replace("\\", "/", realpath($opts["relative"])), "/") . "/";
+	$basePath = rtrim(realpath($opts["relative"]), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
 }
 
 //Convert included paths back to relative after we decide what the base path is
@@ -89,10 +89,9 @@ if(file_exists($basePath . $stubPath)){
 		die("Entry point not found");
 	}
 
-	$entry = addslashes(str_replace("\\", "/", $realEntry));
-	$entry = str_replace($basePath, "", $entry);
-	echo "Setting entry point to " . $entry . PHP_EOL;
-	$phar->setStub('<?php require("phar://" . __FILE__ . "/' . $entry . '"); __HALT_COMPILER();');
+	$realEntry = addslashes(str_replace([$basePath, "\\"], ["", "/"], $realEntry));
+	echo "Setting entry point to " . $realEntry . PHP_EOL;
+	$phar->setStub('<?php require("phar://" . __FILE__ . "/' . $realEntry . '"); __HALT_COMPILER();');
 }else{
 	if(file_exists($basePath . "plugin.yml")){
 		$metadata = yaml_parse_file($basePath . "plugin.yml");
@@ -145,7 +144,7 @@ function preg_quote_array(array $strings, string $delim = null) : array{
 
 //If paths contain any of these, they will be excluded
 $excludedSubstrings = [
-	"/.", //"Hidden" files, git information etc
+	DIRECTORY_SEPARATOR . ".", //"Hidden" files, git information etc
 	$pharName //don't add the phar to itself
 ];
 
