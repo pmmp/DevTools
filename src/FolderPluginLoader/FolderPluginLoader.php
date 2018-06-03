@@ -24,7 +24,6 @@ use pocketmine\plugin\PluginBase;
 use pocketmine\plugin\PluginDescription;
 use pocketmine\plugin\PluginLoader;
 use pocketmine\Server;
-use pocketmine\utils\MainLogger;
 use pocketmine\utils\TextFormat;
 
 class FolderPluginLoader implements PluginLoader{
@@ -126,11 +125,11 @@ class FolderPluginLoader implements PluginLoader{
 	 */
 	public function enablePlugin(Plugin $plugin){
 		if($plugin instanceof PluginBase and !$plugin->isEnabled()){
-			MainLogger::getLogger()->info("Enabling " . $plugin->getDescription()->getFullName());
+			$this->server->getLogger()->info("Enabling " . $plugin->getDescription()->getFullName());
 
 			$plugin->setEnabled(true);
 
-			Server::getInstance()->getPluginManager()->callEvent(new PluginEnableEvent($plugin));
+			$this->server->getPluginManager()->callEvent(new PluginEnableEvent($plugin));
 		}
 	}
 
@@ -139,9 +138,9 @@ class FolderPluginLoader implements PluginLoader{
 	 */
 	public function disablePlugin(Plugin $plugin){
 		if($plugin instanceof PluginBase and $plugin->isEnabled()){
-			MainLogger::getLogger()->info("Disabling " . $plugin->getDescription()->getFullName());
+			$this->server->getLogger()->info("Disabling " . $plugin->getDescription()->getFullName());
 
-			Server::getInstance()->getPluginManager()->callEvent(new PluginDisableEvent($plugin));
+			$this->server->getPluginManager()->callEvent(new PluginDisableEvent($plugin));
 
 			$plugin->setEnabled(false);
 		}
