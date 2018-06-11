@@ -55,7 +55,7 @@ class DevTools extends PluginBase{
 		switch($command->getName()){
 			case "makeplugin":
 				if(isset($args[0]) and $args[0] === "FolderPluginLoader"){
-					return $this->makePluginLoader($sender, $command, $label, $args);
+					return $this->makePluginLoader($sender);
 				}elseif(isset($args[0]) and $args[0] === "*"){
 					$plugins = $this->getServer()->getPluginManager()->getPlugins();
 					$succeeded = $failed = [];
@@ -65,7 +65,7 @@ class DevTools extends PluginBase{
 							$skipped++;
 							continue;
 						}
-						if($this->makePluginCommand($sender, $command, $label, [$plugin->getName()])){
+						if($this->makePluginCommand($sender, [$plugin->getName()])){
 							$succeeded[] = $plugin->getName();
 						}else{
 							$failed[] = $plugin->getName();
@@ -81,19 +81,19 @@ class DevTools extends PluginBase{
 					}
 					return true;
 				}else{
-					$this->makePluginCommand($sender, $command, $label, $args);
+					$this->makePluginCommand($sender, $args);
 					return true;
 				}
 			case "makeserver":
-				return $this->makeServerCommand($sender, $command, $label, $args);
+				return $this->makeServerCommand($sender);
 			case "checkperm":
-				return $this->permissionCheckCommand($sender, $command, $label, $args);
+				return $this->permissionCheckCommand($sender, $args);
 			default:
 				return false;
 		}
 	}
 
-	private function permissionCheckCommand(CommandSender $sender, Command $command, string $label, array $args) : bool{
+	private function permissionCheckCommand(CommandSender $sender, array $args) : bool{
 		$target = $sender;
 		if(!isset($args[0])){
 			return false;
@@ -131,7 +131,7 @@ class DevTools extends PluginBase{
 		}
 	}
 
-	private function makePluginLoader(CommandSender $sender, Command $command, string $label, array $args) : bool{
+	private function makePluginLoader(CommandSender $sender) : bool{
 		$pharPath = $this->getDataFolder() . DIRECTORY_SEPARATOR . "FolderPluginLoader.phar";
 		if(file_exists($pharPath)){
 			$sender->sendMessage("Phar plugin already exists, overwriting...");
@@ -168,7 +168,7 @@ class DevTools extends PluginBase{
 		return true;
 	}
 
-	private function makePluginCommand(CommandSender $sender, Command $command, string $label, array $args) : bool{
+	private function makePluginCommand(CommandSender $sender, array $args) : bool{
 		$pluginName = trim(implode(" ", $args));
 		if($pluginName === "" or !(($plugin = Server::getInstance()->getPluginManager()->getPlugin($pluginName)) instanceof Plugin)){
 			$sender->sendMessage(TextFormat::RED . "Invalid plugin name, check the name case.");
@@ -205,7 +205,7 @@ class DevTools extends PluginBase{
 		return true;
 	}
 
-	private function makeServerCommand(CommandSender $sender, Command $command, string $label, array $args) : bool{
+	private function makeServerCommand(CommandSender $sender) : bool{
 		if(strpos(\pocketmine\PATH, "phar://") === 0){
 			$sender->sendMessage(TextFormat::RED . "This command can only be used on a server running from source code");
 			return true;
