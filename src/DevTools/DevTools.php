@@ -32,7 +32,7 @@ use pocketmine\plugin\PluginLoadOrder;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 
-class DevTools extends PluginBase implements CommandExecutor{
+class DevTools extends PluginBase{
 
 	public function onLoad(){
 		require_once __DIR__ . "/ConsoleScript.php";
