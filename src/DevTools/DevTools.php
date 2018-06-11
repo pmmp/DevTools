@@ -35,6 +35,7 @@ use pocketmine\utils\TextFormat;
 class DevTools extends PluginBase implements CommandExecutor{
 
 	public function onLoad(){
+		require_once __DIR__ . "/ConsoleScript.php";
 		$map = $this->getServer()->getCommandMap();
 		$map->register("devtools", new ExtractPluginCommand($this));
 		$map->register("devtools", new GeneratePluginCommand($this));
@@ -43,8 +44,8 @@ class DevTools extends PluginBase implements CommandExecutor{
 	public function onEnable(){
 		@mkdir($this->getDataFolder());
 
-		$this->getServer()->getPluginManager()->registerInterface("FolderPluginLoader\\FolderPluginLoader");
-		$this->getServer()->getPluginManager()->loadPlugins($this->getServer()->getPluginPath(), ["FolderPluginLoader\\FolderPluginLoader"]);
+		$this->getServer()->getPluginManager()->registerInterface(FolderPluginLoader::class);
+		$this->getServer()->getPluginManager()->loadPlugins($this->getServer()->getPluginPath(), [FolderPluginLoader::class]);
 		$this->getLogger()->info("Registered folder plugin loader");
 		$this->getServer()->enablePlugins(PluginLoadOrder::STARTUP);
 
@@ -182,30 +183,21 @@ class DevTools extends PluginBase implements CommandExecutor{
 
 		$pharPath = $this->getDataFolder() . DIRECTORY_SEPARATOR . $description->getName() . "_v" . $description->getVersion() . ".phar";
 
-		$metadata = [
-			"name" => $description->getName(),
-			"version" => $description->getVersion(),
-			"main" => $description->getMain(),
-			"api" => $description->getCompatibleApis(),
-			"depend" => $description->getDepend(),
-			"description" => $description->getDescription(),
-			"authors" => $description->getAuthors(),
-			"website" => $description->getWebsite(),
-			"creationDate" => time()
-		];
-
 		if($description->getName() === "DevTools"){
-			$stub = '<?php require("phar://". __FILE__ ."/src/DevTools/ConsoleScript.php"); __HALT_COMPILER();';
+			$stub = sprintf(DEVTOOLS_REQUIRE_FILE_STUB, "src/DevTools/ConsoleScript.php");
 		}else{
-			$stub = '<?php echo "PocketMine-MP plugin ' . $description->getName() . ' v' . $description->getVersion() . '\nThis file has been generated using DevTools v' . $this->getDescription()->getVersion() . ' at ' . date("r") . '\n----------------\n";if(extension_loaded("phar")){$phar = new \Phar(__FILE__);foreach($phar->getMetadata() as $key => $value){echo ucfirst($key).": ".(is_array($value) ? implode(", ", $value):$value)."\n";}} __HALT_COMPILER();';
+			$stub = sprintf(DEVTOOLS_PLUGIN_STUB, $description->getName(), $description->getVersion(), $this->getDescription()->getVersion(), date("r"));
 		}
 
-		$reflection = new \ReflectionClass("pocketmine\\plugin\\PluginBase");
+		$reflection = new \ReflectionClass(PluginBase::class);
 		$file = $reflection->getProperty("file");
 		$file->setAccessible(true);
 		$filePath = realpath($file->getValue($plugin));
 		assert(is_string($filePath));
 		$filePath = rtrim($filePath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+
+		$metadata = generatePluginMetadataFromYml($filePath . "plugin.yml");
+		assert($metadata !== null);
 
 		$this->buildPhar($sender, $pharPath, $filePath, [], $metadata, $stub, \Phar::SHA1);
 
@@ -231,7 +223,7 @@ class DevTools extends PluginBase implements CommandExecutor{
 			"protocol" => ProtocolInfo::CURRENT_PROTOCOL
 		];
 
-		$stub = '<?php require_once("phar://". __FILE__ ."/src/pocketmine/PocketMine.php");  __HALT_COMPILER();';
+		$stub = sprintf(DEVTOOLS_REQUIRE_FILE_STUB, "src/pocketmine/PocketMine.php");
 
 		$filePath = realpath(\pocketmine\PATH) . DIRECTORY_SEPARATOR;
 		$filePath = rtrim($filePath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
@@ -243,60 +235,9 @@ class DevTools extends PluginBase implements CommandExecutor{
 		return true;
 	}
 
-	private function preg_quote_array(array $strings, string $delim = null) : array{
-		return array_map(function(string $str) use ($delim) : string{ return preg_quote($str, $delim); }, $strings);
-	}
-
 	private function buildPhar(CommandSender $sender, string $pharPath, string $basePath, array $includedPaths, array $metadata, string $stub, int $signatureAlgo = \Phar::SHA1){
-		if(file_exists($pharPath)){
-			$sender->sendMessage("Phar file already exists, overwriting...");
-			try{
-				\Phar::unlinkArchive($pharPath);
-			}catch(\PharException $e){
-				//unlinkArchive() doesn't like dodgy phars
-				unlink($pharPath);
-			}
+		foreach(buildPhar($pharPath, $basePath, $includedPaths, $metadata, $stub, $signatureAlgo, \Phar::GZ) as $line){
+			$sender->sendMessage("[DevTools] $line");
 		}
-
-		$sender->sendMessage("[DevTools] Adding files...");
-
-		$start = microtime(true);
-		$phar = new \Phar($pharPath);
-		$phar->setMetadata($metadata);
-		$phar->setStub($stub);
-		$phar->setSignatureAlgorithm($signatureAlgo);
-		$phar->startBuffering();
-
-		//If paths contain any of these, they will be excluded
-		$excludedSubstrings = [
-			DIRECTORY_SEPARATOR . ".", //"Hidden" files, git information etc
-			realpath($pharPath) //don't add the phar to itself
-		];
-
-		$regex = sprintf('/^(?!.*(%s))^%s(%s).*/i',
-			implode('|', $this->preg_quote_array($excludedSubstrings, '/')), //String may not contain any of these substrings
-			preg_quote($basePath, '/'), //String must start with this path...
-			implode('|', $this->preg_quote_array($includedPaths, '/')) //... and must be followed by one of these relative paths, if any were specified. If none, this will produce a null capturing group which will allow anything.
-		);
-
-		$directory = new \RecursiveDirectoryIterator($basePath, \FilesystemIterator::SKIP_DOTS | \FilesystemIterator::FOLLOW_SYMLINKS | \FilesystemIterator::CURRENT_AS_PATHNAME); //can't use fileinfo because of symlinks
-		$iterator = new \RecursiveIteratorIterator($directory);
-		$regexIterator = new \RegexIterator($iterator, $regex);
-
-		$count = count($phar->buildFromIterator($regexIterator, $basePath));
-		$sender->sendMessage("[DevTools] Added $count files");
-
-		$sender->sendMessage("[DevTools] Checking for compressible files...");
-		foreach($phar as $file => $finfo){
-			/** @var \PharFileInfo $finfo */
-			if($finfo->getSize() > (1024 * 512)){
-				$sender->sendMessage("[DevTools] Compressing " . $finfo->getFilename());
-				$finfo->compress(\Phar::GZ);
-			}
-		}
-		$phar->stopBuffering();
-
-		$sender->sendMessage("[DevTools] Done in " . round(microtime(true) - $start, 3) . "s");
 	}
-
 }
