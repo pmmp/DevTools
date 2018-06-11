@@ -21,7 +21,6 @@ use DevTools\commands\ExtractPluginCommand;
 use DevTools\commands\GeneratePluginCommand;
 use FolderPluginLoader\FolderPluginLoader;
 use pocketmine\command\Command;
-use pocketmine\command\CommandExecutor;
 use pocketmine\command\CommandSender;
 use pocketmine\network\mcpe\protocol\ProtocolInfo;
 use pocketmine\permission\Permission;
