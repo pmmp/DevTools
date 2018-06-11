@@ -34,14 +34,14 @@ use pocketmine\utils\TextFormat;
 
 class DevTools extends PluginBase{
 
-	public function onLoad(){
+	public function onLoad() : void{
 		require_once __DIR__ . "/ConsoleScript.php";
 		$map = $this->getServer()->getCommandMap();
 		$map->register("devtools", new ExtractPluginCommand($this));
 		$map->register("devtools", new GeneratePluginCommand($this));
 	}
 
-	public function onEnable(){
+	public function onEnable() : void{
 		@mkdir($this->getDataFolder());
 
 		$this->getServer()->getPluginManager()->registerInterface(FolderPluginLoader::class);
@@ -235,7 +235,7 @@ class DevTools extends PluginBase{
 		return true;
 	}
 
-	private function buildPhar(CommandSender $sender, string $pharPath, string $basePath, array $includedPaths, array $metadata, string $stub, int $signatureAlgo = \Phar::SHA1){
+	private function buildPhar(CommandSender $sender, string $pharPath, string $basePath, array $includedPaths, array $metadata, string $stub, int $signatureAlgo = \Phar::SHA1) : void{
 		foreach(buildPhar($pharPath, $basePath, $includedPaths, $metadata, $stub, $signatureAlgo, \Phar::GZ) as $line){
 			$sender->sendMessage("[DevTools] $line");
 		}

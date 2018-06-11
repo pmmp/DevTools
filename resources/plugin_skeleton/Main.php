@@ -8,7 +8,7 @@ use pocketmine\command\Command;
 
 class Main extends PluginBase{
 
-	public function onEnable(){
+	public function onEnable() : void{
 		$this->getLogger()->info("Hello World!");
 	}
 
@@ -22,7 +22,7 @@ class Main extends PluginBase{
 		}
 	}
 
-	public function onDisable(){
+	public function onDisable() : void{
 		$this->getLogger()->info("Bye");
 	}
 }
