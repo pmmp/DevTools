@@ -23,6 +23,7 @@ use pocketmine\plugin\PharPluginLoader;
 use pocketmine\plugin\Plugin;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
+use pocketmine\plugin\PluginBase;
 
 class ExtractPluginCommand extends DevToolsCommand{
 
@@ -66,7 +67,7 @@ class ExtractPluginCommand extends DevToolsCommand{
 			@mkdir($folderPath);
 		}
 
-		$reflection = new \ReflectionClass("pocketmine\\plugin\\PluginBase");
+		$reflection = new \ReflectionClass(PluginBase::class);
 		$file = $reflection->getProperty("file");
 		$file->setAccessible(true);
 		$pharPath = str_replace("\\", "/", rtrim($file->getValue($plugin), "\\/"));
