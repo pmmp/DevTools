@@ -25,7 +25,7 @@ use pocketmine\plugin\PluginLoadOrder;
 class Main extends PluginBase{
 
 	public function onEnable() : void{
-		$this->getServer()->getPluginManager()->registerInterface(FolderPluginLoader::class);
+		$this->getServer()->getPluginManager()->registerInterface(new FolderPluginLoader($this->getServer()->getLoader()));
 		$this->getServer()->getPluginManager()->loadPlugins($this->getServer()->getPluginPath(), [FolderPluginLoader::class]);
 		$this->getServer()->enablePlugins(PluginLoadOrder::STARTUP);
 	}

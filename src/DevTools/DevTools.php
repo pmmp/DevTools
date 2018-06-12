@@ -45,7 +45,7 @@ class DevTools extends PluginBase{
 	public function onEnable() : void{
 		@mkdir($this->getDataFolder());
 
-		$this->getServer()->getPluginManager()->registerInterface(FolderPluginLoader::class);
+		$this->getServer()->getPluginManager()->registerInterface(new FolderPluginLoader($this->getServer()->getLoader()));
 		$this->getServer()->getPluginManager()->loadPlugins($this->getServer()->getPluginPath(), [FolderPluginLoader::class]);
 		$this->getLogger()->info("Registered folder plugin loader");
 		$this->getServer()->enablePlugins(PluginLoadOrder::STARTUP);
