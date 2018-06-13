@@ -70,6 +70,6 @@ class FolderPluginLoader implements PluginLoader{
 	}
 
 	public function getAccessProtocol() : string{
-		return "file://";
+		return "";
 	}
 }
