@@ -68,4 +68,8 @@ class FolderPluginLoader implements PluginLoader{
 
 		return null;
 	}
+
+	public function getAccessProtocol() : string{
+		return "file://";
+	}
 }
