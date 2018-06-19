@@ -25,7 +25,7 @@ use pocketmine\command\PluginIdentifiableCommand;
 use pocketmine\plugin\Plugin;
 
 abstract class DevToolsCommand extends Command implements PluginIdentifiableCommand{
-	/** @var Plugin */
+	/** @var DevTools */
 	private $owningPlugin;
 
 	public function __construct(string $name, DevTools $plugin){
@@ -34,6 +34,9 @@ abstract class DevToolsCommand extends Command implements PluginIdentifiableComm
 		$this->usageMessage = "";
 	}
 
+	/**
+	 * @return DevTools
+	 */
 	public function getPlugin() : Plugin{
 		return $this->owningPlugin;
 	}
