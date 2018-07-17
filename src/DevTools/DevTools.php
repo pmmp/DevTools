@@ -133,7 +133,7 @@ class DevTools extends PluginBase{
 	}
 
 	private function makePluginLoader(CommandSender $sender) : bool{
-		$pharPath = $this->getDataFolder() . DIRECTORY_SEPARATOR . "FolderPluginLoader.phar";
+		$pharPath = $this->getDataFolder() . "FolderPluginLoader.phar";
 		if(file_exists($pharPath)){
 			$sender->sendMessage("Phar plugin already exists, overwriting...");
 			\Phar::unlinkArchive($pharPath);
@@ -182,7 +182,7 @@ class DevTools extends PluginBase{
 			return false;
 		}
 
-		$pharPath = $this->getDataFolder() . DIRECTORY_SEPARATOR . $description->getName() . "_v" . $description->getVersion() . ".phar";
+		$pharPath = $this->getDataFolder() . $description->getName() . "_v" . $description->getVersion() . ".phar";
 
 		if($description->getName() === "DevTools"){
 			$stub = sprintf(DEVTOOLS_REQUIRE_FILE_STUB, "src/DevTools/ConsoleScript.php");
@@ -213,7 +213,7 @@ class DevTools extends PluginBase{
 		}
 
 		$server = $sender->getServer();
-		$pharPath = $this->getDataFolder() . DIRECTORY_SEPARATOR . $server->getName() . "_" . $server->getPocketMineVersion() . ".phar";
+		$pharPath = $this->getDataFolder() . $server->getName() . "_" . $server->getPocketMineVersion() . ".phar";
 
 		$metadata = [
 			"name" => $server->getName(),
