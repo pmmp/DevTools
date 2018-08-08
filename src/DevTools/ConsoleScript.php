@@ -79,13 +79,23 @@ function buildPhar(string $pharPath, string $basePath, array $includedPaths, arr
 	$phar->startBuffering();
 
 	//If paths contain any of these, they will be excluded
-	$excludedSubstrings = [
-		DIRECTORY_SEPARATOR . ".", //"Hidden" files, git information etc
-		realpath($pharPath) //don't add the phar to itself
-	];
+	$excludedSubstrings = preg_quote_array([
+		realpath($pharPath), //don't add the phar to itself
+	], '/');
+
+	$folderPatterns = preg_quote_array([
+		DIRECTORY_SEPARATOR . 'tests' . DIRECTORY_SEPARATOR,
+		DIRECTORY_SEPARATOR . '.' //"Hidden" files, git dirs etc
+	], '/');
+
+	//Only exclude these within the basedir, otherwise the project won't get built if it itself is in a directory that matches these patterns
+	$basePattern = preg_quote(rtrim($basePath, DIRECTORY_SEPARATOR), '/');
+	foreach($folderPatterns as $p){
+		$excludedSubstrings[] = $basePattern . '.*' . $p;
+	}
 
 	$regex = sprintf('/^(?!.*(%s))^%s(%s).*/i',
-		 implode('|', preg_quote_array($excludedSubstrings, '/')), //String may not contain any of these substrings
+		 implode('|', $excludedSubstrings), //String may not contain any of these substrings
 		 preg_quote($basePath, '/'), //String must start with this path...
 		 implode('|', preg_quote_array($includedPaths, '/')) //... and must be followed by one of these relative paths, if any were specified. If none, this will produce a null capturing group which will allow anything.
 	);
