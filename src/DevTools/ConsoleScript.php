@@ -103,7 +103,7 @@ function buildPhar(string $pharPath, string $basePath, array $includedPaths, arr
 			/** @var \PharFileInfo $finfo */
 			if($finfo->getSize() > (1024 * 512)){
 				yield "Compressing " . $finfo->getFilename();
-				$finfo->compress(\Phar::GZ);
+				$finfo->compress($compression);
 			}
 		}
 	}
