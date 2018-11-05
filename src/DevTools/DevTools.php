@@ -229,7 +229,7 @@ class DevTools extends PluginBase{
 		$filePath = realpath(\pocketmine\PATH) . DIRECTORY_SEPARATOR;
 		$filePath = rtrim($filePath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
 
-		$this->buildPhar($sender, $pharPath, $filePath, ['src', 'vendor'], $metadata, $stub, \Phar::SHA1);
+		$this->buildPhar($sender, $pharPath, $filePath, ['src', 'vendor', 'resources'], $metadata, $stub, \Phar::SHA1);
 
 		$sender->sendMessage($server->getName() . " " . $server->getPocketMineVersion() . " Phar file has been created on " . $pharPath);
 
