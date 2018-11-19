@@ -165,7 +165,9 @@ function main() : void{
 		}
 
 		//Convert to absolute path for base path detection
-		$path = rtrim($realPath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+		if(is_dir($realPath)){
+			$path = rtrim($realPath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+		}
 	});
 
 	if(!isset($opts["relative"])){
