@@ -17,7 +17,7 @@ declare(strict_types=1);
  * GNU General Public License for more details.
 */
 
-const DEVTOOLS_VERSION = "1.13.0";
+const DEVTOOLS_VERSION = "1.13.1";
 
 const DEVTOOLS_REQUIRE_FILE_STUB = '<?php require("phar://" . __FILE__ . "/%s"); __HALT_COMPILER();';
 const DEVTOOLS_PLUGIN_STUB = '
@@ -165,7 +165,9 @@ function main() : void{
 		}
 
 		//Convert to absolute path for base path detection
-		$path = rtrim($realPath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+		if(is_dir($realPath)){
+			$path = rtrim($realPath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+		}
 	});
 
 	if(!isset($opts["relative"])){
