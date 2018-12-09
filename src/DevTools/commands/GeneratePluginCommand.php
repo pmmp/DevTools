@@ -64,31 +64,43 @@ class GeneratePluginCommand extends DevToolsCommand{
 
 		mkdir($rootDirectory . $namespacePath, 0755, true); //create all the needed directories
 
-		$pluginSkeletonTemplateDir = $this->getPlugin()->getDataFolder() . DIRECTORY_SEPARATOR . "plugin_skeleton" . DIRECTORY_SEPARATOR;
+		$pluginYmlTemplate = $this->getPlugin()->getResource("plugin_skeleton/plugin.yml");
+		$mainPhpTemplate = $this->getPlugin()->getResource("plugin_skeleton/Main.php");
 
-		$this->getPlugin()->saveResource("plugin_skeleton/plugin.yml", true);
-		$this->getPlugin()->saveResource("plugin_skeleton/Main.php", true);
+		try{
+			if($mainPhpTemplate === null or $pluginYmlTemplate === null){
+				$sender->sendMessage(TextFormat::RED . "Error: missing template files");
+				return true;
+			}
 
-		$replace = [
-			"%{PluginName}" => $pluginName,
-			"%{ApiVersion}" => $this->getPlugin()->getServer()->getApiVersion(),
-			"%{AuthorName}" => $author,
-			"%{Namespace}" => $namespace
-		];
+			$replace = [
+				"%{PluginName}" => $pluginName,
+				"%{ApiVersion}" => $this->getPlugin()->getServer()->getApiVersion(),
+				"%{AuthorName}" => $author,
+				"%{Namespace}" => $namespace
+			];
 
-		file_put_contents($rootDirectory . "plugin.yml", str_replace(
-			array_keys($replace),
-			array_values($replace),
-			file_get_contents($pluginSkeletonTemplateDir . "plugin.yml")
-		));
+			file_put_contents($rootDirectory . "plugin.yml", str_replace(
+				array_keys($replace),
+				array_values($replace),
+				stream_get_contents($pluginYmlTemplate)
+			));
 
-		file_put_contents($rootDirectory . $namespacePath . "Main.php", str_replace(
-			"#%{Namespace}", "namespace " . $namespace . ";",
-			file_get_contents($pluginSkeletonTemplateDir . "Main.php")
-		));
+			file_put_contents($rootDirectory . $namespacePath . "Main.php", str_replace(
+				"#%{Namespace}", "namespace " . $namespace . ";",
+				stream_get_contents($mainPhpTemplate)
+			));
 
-		$sender->sendMessage("Created skeleton plugin $pluginName in " . $rootDirectory);
-		return true;
+			$sender->sendMessage("Created skeleton plugin $pluginName in " . $rootDirectory);
+			return true;
+		}finally{
+			if($mainPhpTemplate !== null){
+				fclose($mainPhpTemplate);
+			}
+			if($pluginYmlTemplate !== null){
+				fclose($pluginYmlTemplate);
+			}
+		}
 	}
 
 	private static function correctNamespacePart(string $part) : string{
