@@ -193,8 +193,12 @@ class DevTools extends PluginBase{
 		$reflection = new \ReflectionClass(PluginBase::class);
 		$file = $reflection->getProperty("file");
 		$file->setAccessible(true);
-		$filePath = realpath($file->getValue($plugin));
-		assert(is_string($filePath));
+		$pfile = rtrim($file->getValue($plugin), '/');
+		$filePath = realpath($pfile);
+		if($filePath === false){
+			$sender->sendMessage(TextFormat::RED . "Plugin " . $description->getName() . " not found at $pfile (maybe deleted?)");
+			return false;
+		}
 		$filePath = rtrim($filePath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
 
 		$metadata = generatePluginMetadataFromYml($filePath . "plugin.yml");
