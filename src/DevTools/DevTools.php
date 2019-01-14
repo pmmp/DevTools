@@ -26,6 +26,7 @@ use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\network\mcpe\protocol\ProtocolInfo;
 use pocketmine\permission\Permission;
+use pocketmine\permission\PermissionManager;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginBase;
@@ -113,7 +114,7 @@ class DevTools extends PluginBase{
 			return true;
 		}else{
 			$sender->sendMessage(TextFormat::GREEN . "---- " . TextFormat::WHITE . "Permission node " . $node . TextFormat::GREEN . " ----");
-			$perm = $this->getServer()->getPluginManager()->getPermission($node);
+			$perm = PermissionManager::getInstance()->getPermission($node);
 			if($perm instanceof Permission){
 				$desc = TextFormat::GOLD . "Description: " . TextFormat::WHITE . $perm->getDescription() . "\n";
 				$desc .= TextFormat::GOLD . "Default: " . TextFormat::WHITE . $perm->getDefault() . "\n";
