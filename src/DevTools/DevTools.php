@@ -33,6 +33,25 @@ use pocketmine\plugin\PluginBase;
 use pocketmine\plugin\PluginLoadOrder;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
+use function assert;
+use function buildPhar;
+use function count;
+use function date;
+use function file_exists;
+use function generatePluginMetadataFromYml;
+use function implode;
+use function mkdir;
+use function realpath;
+use function rtrim;
+use function sprintf;
+use function strpos;
+use function strtolower;
+use function substr;
+use function time;
+use function trim;
+use const DEVTOOLS_PLUGIN_STUB;
+use const DEVTOOLS_REQUIRE_FILE_STUB;
+use const DIRECTORY_SEPARATOR;
 
 class DevTools extends PluginBase{
 

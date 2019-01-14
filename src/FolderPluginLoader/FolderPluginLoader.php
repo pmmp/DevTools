@@ -19,15 +19,11 @@ declare(strict_types=1);
 
 namespace FolderPluginLoader;
 
-use pocketmine\event\plugin\PluginDisableEvent;
-use pocketmine\event\plugin\PluginEnableEvent;
-use pocketmine\plugin\Plugin;
-use pocketmine\plugin\PluginBase;
 use pocketmine\plugin\PluginDescription;
-use pocketmine\plugin\PluginException;
 use pocketmine\plugin\PluginLoader;
-use pocketmine\Server;
-use pocketmine\utils\TextFormat;
+use function file_exists;
+use function file_get_contents;
+use function is_dir;
 
 class FolderPluginLoader implements PluginLoader{
 
