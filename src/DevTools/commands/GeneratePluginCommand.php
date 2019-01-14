@@ -23,6 +23,18 @@ namespace DevTools\commands;
 use DevTools\DevTools;
 use pocketmine\command\CommandSender;
 use pocketmine\utils\TextFormat;
+use function array_keys;
+use function array_values;
+use function count;
+use function ctype_digit;
+use function fclose;
+use function file_exists;
+use function file_put_contents;
+use function mkdir;
+use function preg_match;
+use function str_replace;
+use function stream_get_contents;
+use const DIRECTORY_SEPARATOR;
 
 class GeneratePluginCommand extends DevToolsCommand{
 

@@ -26,12 +26,32 @@ use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\network\mcpe\protocol\ProtocolInfo;
 use pocketmine\permission\Permission;
+use pocketmine\permission\PermissionManager;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginBase;
 use pocketmine\plugin\PluginLoadOrder;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
+use function assert;
+use function buildPhar;
+use function count;
+use function date;
+use function file_exists;
+use function generatePluginMetadataFromYml;
+use function implode;
+use function mkdir;
+use function realpath;
+use function rtrim;
+use function sprintf;
+use function strpos;
+use function strtolower;
+use function substr;
+use function time;
+use function trim;
+use const DEVTOOLS_PLUGIN_STUB;
+use const DEVTOOLS_REQUIRE_FILE_STUB;
+use const DIRECTORY_SEPARATOR;
 
 class DevTools extends PluginBase{
 
@@ -113,7 +133,7 @@ class DevTools extends PluginBase{
 			return true;
 		}else{
 			$sender->sendMessage(TextFormat::GREEN . "---- " . TextFormat::WHITE . "Permission node " . $node . TextFormat::GREEN . " ----");
-			$perm = $this->getServer()->getPluginManager()->getPermission($node);
+			$perm = PermissionManager::getInstance()->getPermission($node);
 			if($perm instanceof Permission){
 				$desc = TextFormat::GOLD . "Description: " . TextFormat::WHITE . $perm->getDescription() . "\n";
 				$desc .= TextFormat::GOLD . "Default: " . TextFormat::WHITE . $perm->getDefault() . "\n";

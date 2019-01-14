@@ -23,9 +23,20 @@ use DevTools\DevTools;
 use pocketmine\command\CommandSender;
 use pocketmine\plugin\PharPluginLoader;
 use pocketmine\plugin\Plugin;
+use pocketmine\plugin\PluginBase;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
-use pocketmine\plugin\PluginBase;
+use function count;
+use function dirname;
+use function file_exists;
+use function file_get_contents;
+use function file_put_contents;
+use function implode;
+use function mkdir;
+use function rtrim;
+use function str_replace;
+use function trim;
+use const DIRECTORY_SEPARATOR;
 
 class ExtractPluginCommand extends DevToolsCommand{
 
