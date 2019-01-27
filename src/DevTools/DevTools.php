@@ -40,7 +40,9 @@ use function date;
 use function file_exists;
 use function generatePluginMetadataFromYml;
 use function implode;
+use function ini_get;
 use function mkdir;
+use function php_ini_loaded_file;
 use function realpath;
 use function rtrim;
 use function sprintf;
@@ -152,7 +154,12 @@ class DevTools extends PluginBase{
 		}
 	}
 
+
 	private function makePluginLoader(CommandSender $sender) : bool{
+		if(ini_get('phar.readonly') !== '0'){
+			$sender->sendMessage(TextFormat::RED . "This command requires \"phar.readonly\" to be set to 0. Set it in " . php_ini_loaded_file() . " and restart the server.");
+			return true;
+		}
 		$pharPath = $this->getDataFolder() . "FolderPluginLoader.phar";
 		if(file_exists($pharPath)){
 			$sender->sendMessage("Phar plugin already exists, overwriting...");
@@ -190,6 +197,10 @@ class DevTools extends PluginBase{
 	}
 
 	private function makePluginCommand(CommandSender $sender, array $args) : bool{
+		if(ini_get('phar.readonly') !== '0'){
+			$sender->sendMessage(TextFormat::RED . "This command requires \"phar.readonly\" to be set to 0. Set it in " . php_ini_loaded_file() . " and restart the server.");
+			return true;
+		}
 		$pluginName = trim(implode(" ", $args));
 		if($pluginName === "" or !(($plugin = Server::getInstance()->getPluginManager()->getPlugin($pluginName)) instanceof Plugin)){
 			$sender->sendMessage(TextFormat::RED . "Invalid plugin name, check the name case.");
@@ -231,6 +242,10 @@ class DevTools extends PluginBase{
 	}
 
 	private function makeServerCommand(CommandSender $sender) : bool{
+		if(ini_get('phar.readonly') !== '0'){
+			$sender->sendMessage(TextFormat::RED . "This command requires \"phar.readonly\" to be set to 0. Set it in " . php_ini_loaded_file() . " and restart the server.");
+			return true;
+		}
 		if(strpos(\pocketmine\PATH, "phar://") === 0){
 			$sender->sendMessage(TextFormat::RED . "This command can only be used on a server running from source code");
 			return true;
