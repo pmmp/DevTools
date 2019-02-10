@@ -20,9 +20,9 @@ declare(strict_types=1);
 namespace FolderPluginLoader;
 
 use pocketmine\plugin\loader\AbstractPluginLoader;
+use pocketmine\plugin\manifest\YamlPluginManifest;
 use function file_exists;
 use function is_dir;
-use pocketmine\plugin\manifest\YamlPluginManifest;
 
 class FolderPluginLoader extends AbstractPluginLoader{
 
