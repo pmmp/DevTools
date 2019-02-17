@@ -20,14 +20,14 @@ declare(strict_types=1);
 namespace FolderPluginLoader;
 
 use pocketmine\plugin\loader\AbstractPluginLoader;
-use pocketmine\plugin\manifest\YamlPluginManifest;
+use pocketmine\plugin\manifest\YamlManifestLoader;
 use function file_exists;
 use function is_dir;
 
 class FolderPluginLoader extends AbstractPluginLoader{
 
 	public function __construct(){
-		$this->registerManifest(YamlPluginManifest::class);
+		$this->addManifestLoader(YamlManifestLoader::class);
 	}
 
 	public function canLoadPlugin(string $path) : bool{
