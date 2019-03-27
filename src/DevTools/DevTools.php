@@ -70,7 +70,7 @@ class DevTools extends PluginBase{
 		$this->getServer()->getPluginManager()->registerInterface(new FolderPluginLoader($this->getServer()->getLoader()));
 		$this->getServer()->getPluginManager()->loadPlugins($this->getServer()->getPluginPath(), [FolderPluginLoader::class]);
 		$this->getLogger()->info("Registered folder plugin loader");
-		$this->getServer()->enablePlugins(PluginLoadOrder::STARTUP);
+		$this->getServer()->enablePlugins(PluginLoadOrder::STARTUP());
 
 	}
 
