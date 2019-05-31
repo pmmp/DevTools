@@ -21,16 +21,14 @@ namespace DevTools\commands;
 
 use DevTools\DevTools;
 use pocketmine\command\CommandSender;
-use pocketmine\plugin\PharPluginLoader;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginBase;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
+use function copy;
 use function count;
 use function dirname;
 use function file_exists;
-use function file_get_contents;
-use function file_put_contents;
 use function implode;
 use function mkdir;
 use function rtrim;
@@ -68,7 +66,7 @@ class ExtractPluginCommand extends DevToolsCommand{
 		}
 		$description = $plugin->getDescription();
 
-		if(!($plugin->getPluginLoader() instanceof PharPluginLoader)){
+		if(!($plugin instanceof PluginBase && $plugin->isPhar())){
 			$sender->sendMessage(TextFormat::RED . "Plugin " . $description->getName() . " is not in Phar structure.");
 			return true;
 		}
@@ -80,15 +78,12 @@ class ExtractPluginCommand extends DevToolsCommand{
 			@mkdir($folderPath);
 		}
 
-		$reflection = new \ReflectionClass(PluginBase::class);
-		$file = $reflection->getProperty("file");
-		$file->setAccessible(true);
-		$pharPath = str_replace("\\", "/", rtrim($file->getValue($plugin), "\\/"));
+		$pharPath = str_replace("\\", "/", rtrim($plugin->getFile(), "\\/"));
 
 		foreach(new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($pharPath)) as $fInfo){
 			$path = $fInfo->getPathname();
 			@mkdir(dirname($folderPath . str_replace($pharPath, "", $path)), 0755, true);
-			file_put_contents($folderPath . str_replace($pharPath, "", $path), file_get_contents($path));
+			copy($path, $folderPath . str_replace($pharPath, "", $path));
 		}
 		$sender->sendMessage("Source plugin " . $description->getName() . " v" . $description->getVersion() . " has been created on " . $folderPath);
 		return true;
