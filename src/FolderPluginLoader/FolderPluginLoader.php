@@ -19,32 +19,46 @@ declare(strict_types=1);
 
 namespace FolderPluginLoader;
 
+use ClassLoader;
+use pocketmine\plugin\PharPluginLoader;
 use pocketmine\plugin\PluginDescription;
-use pocketmine\plugin\PluginLoader;
+use pocketmine\plugin\PluginManager;
 use function file_exists;
 use function file_get_contents;
 use function is_dir;
+use function is_file;
+use function realpath;
+use function rtrim;
+use function scandir;
+use const DIRECTORY_SEPARATOR;
+use const SCANDIR_SORT_NONE;
 
-class FolderPluginLoader implements PluginLoader{
-
-	/** @var \ClassLoader */
-	private $loader;
-
-	public function __construct(\ClassLoader $loader){
-		$this->loader = $loader;
-	}
-
-	public function canLoadPlugin(string $path) : bool{
-		return is_dir($path) and file_exists($path . "/plugin.yml") and file_exists($path . "/src/");
-	}
-
+final class FolderPluginLoader{
 	/**
-	 * Loads the plugin contained in $file
+	 * Load script plugins in the directory $dir into the provided PluginManager
 	 *
-	 * @param string $file
+	 * @param PluginManager $manager
+	 * @param ClassLoader   $classLoader
+	 * @param string        $dir
 	 */
-	public function loadPlugin(string $file) : void{
-		$this->loader->addPath("$file/src");
+	public static function scanPlugins(PluginManager $manager, ClassLoader $classLoader, string $dir) : void{
+		foreach(scandir($dir, SCANDIR_SORT_NONE) as $file){
+			$file = $dir . DIRECTORY_SEPARATOR . $file;
+			if(is_dir($file)){
+				self::loadPlugin($manager, $classLoader, $file);
+			}
+		}
+	}
+
+	public static function loadPlugin(PluginManager $manager, ClassLoader $classLoader, string $file) : bool{
+		$description = self::getPluginDescription($file);
+		if($description === null){
+			return false;
+		}
+		$file = realpath($file);
+
+		PharPluginLoader::loadClassical($manager, $classLoader, $file, $description);
+		return true;
 	}
 
 	/**
@@ -54,18 +68,12 @@ class FolderPluginLoader implements PluginLoader{
 	 *
 	 * @return null|PluginDescription
 	 */
-	public function getPluginDescription(string $file) : ?PluginDescription{
-		if(is_dir($file) and file_exists($file . "/plugin.yml")){
-			$yaml = @file_get_contents($file . "/plugin.yml");
-			if($yaml != ""){
-				return new PluginDescription($yaml);
-			}
+	public static function getPluginDescription(string $file) : ?PluginDescription{
+		$file = rtrim($file, "\\/") . "/";
+		if(is_file($file . "plugin.yml")){
+			return new PluginDescription(file_get_contents($file . "plugin.yml"));
 		}
 
 		return null;
-	}
-
-	public function getAccessProtocol() : string{
-		return "";
 	}
 }

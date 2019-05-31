@@ -57,21 +57,13 @@ use const DIRECTORY_SEPARATOR;
 
 class DevTools extends PluginBase{
 
-	public function onLoad() : void{
+	public function onEnable() : void{
 		require_once __DIR__ . "/ConsoleScript.php";
 		$map = $this->getServer()->getCommandMap();
 		$map->register("devtools", new ExtractPluginCommand($this));
 		$map->register("devtools", new GeneratePluginCommand($this));
-	}
 
-	public function onEnable() : void{
-		@mkdir($this->getDataFolder());
-
-		$this->getServer()->getPluginManager()->registerInterface(new FolderPluginLoader($this->getServer()->getLoader()));
-		$this->getServer()->getPluginManager()->loadPlugins($this->getServer()->getPluginPath(), [FolderPluginLoader::class]);
-		$this->getLogger()->info("Registered folder plugin loader");
-		$this->getServer()->enablePlugins(PluginLoadOrder::STARTUP());
-
+		FolderPluginLoader::scanPlugins($this->getServer()->getPluginManager(), $this->getServer()->getLoader(), $this->getServer()->getPluginPath());
 	}
 
 	public function onCommand(CommandSender $sender, Command $command, string $label, array $args) : bool{

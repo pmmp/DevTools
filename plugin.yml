@@ -1,8 +1,8 @@
 name: DevTools
 main: DevTools\DevTools
 version: 1.13.3
-api: [3.4.0, 4.0.0]
-load: STARTUP
+api: [4.0.0]
+load: SCAN
 author: PocketMine Team
 description: Helps develop and distribute PocketMine-MP plugins
 website: https://github.com/PocketMine/DevTools
