@@ -30,7 +30,6 @@ use pocketmine\permission\PermissionManager;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginBase;
-use pocketmine\plugin\PluginLoadOrder;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use function assert;
@@ -41,7 +40,6 @@ use function file_exists;
 use function generatePluginMetadataFromYml;
 use function implode;
 use function ini_get;
-use function mkdir;
 use function php_ini_loaded_file;
 use function realpath;
 use function rtrim;
@@ -200,7 +198,7 @@ class DevTools extends PluginBase{
 		}
 		$description = $plugin->getDescription();
 
-		if(!($plugin->getPluginLoader() instanceof FolderPluginLoader)){
+		if(!($plugin instanceof PluginBase && $plugin->getLoaderType() === FolderPluginLoader::class)){
 			$sender->sendMessage(TextFormat::RED . "Plugin " . $description->getName() . " is not in folder structure.");
 			return false;
 		}
@@ -213,10 +211,7 @@ class DevTools extends PluginBase{
 			$stub = sprintf(DEVTOOLS_PLUGIN_STUB, $description->getName(), $description->getVersion(), $this->getDescription()->getVersion(), date("r"));
 		}
 
-		$reflection = new \ReflectionClass(PluginBase::class);
-		$file = $reflection->getProperty("file");
-		$file->setAccessible(true);
-		$pfile = rtrim($file->getValue($plugin), '/');
+		$pfile = rtrim($plugin->getFile(), '/');
 		$filePath = realpath($pfile);
 		if($filePath === false){
 			$sender->sendMessage(TextFormat::RED . "Plugin " . $description->getName() . " not found at $pfile (maybe deleted?)");

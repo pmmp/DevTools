@@ -21,8 +21,8 @@ namespace DevTools\commands;
 
 use DevTools\DevTools;
 use pocketmine\command\CommandSender;
+use pocketmine\plugin\PharPluginLoader;
 use pocketmine\plugin\Plugin;
-use pocketmine\plugin\PluginBase;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use function copy;
@@ -66,7 +66,7 @@ class ExtractPluginCommand extends DevToolsCommand{
 		}
 		$description = $plugin->getDescription();
 
-		if(!($plugin instanceof PluginBase && $plugin->isPhar())){
+		if(!($plugin->getLoaderType() === PharPluginLoader::class)){
 			$sender->sendMessage(TextFormat::RED . "Plugin " . $description->getName() . " is not in Phar structure.");
 			return true;
 		}
