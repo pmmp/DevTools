@@ -59,6 +59,10 @@ function preg_quote_array(array $strings, string $delim = null) : array{
  * @return Generator|string[]
  */
 function buildPhar(string $pharPath, string $basePath, array $includedPaths, array $metadata, string $stub, int $signatureAlgo = \Phar::SHA1, ?int $compression = null){
+	$basePath = rtrim(str_replace("/", DIRECTORY_SEPARATOR, $basePath), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+	$includedPaths = array_map(function($path){
+		return rtrim(str_replace("/", DIRECTORY_SEPARATOR, $path), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+	}, $includedPaths);
 	if(file_exists($pharPath)){
 		yield "Phar file already exists, overwriting...";
 		try{
