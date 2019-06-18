@@ -27,7 +27,7 @@ use pocketmine\command\CommandSender;
 use pocketmine\network\mcpe\protocol\ProtocolInfo;
 use pocketmine\permission\Permission;
 use pocketmine\permission\PermissionManager;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginBase;
 use pocketmine\plugin\PluginLoadOrder;
