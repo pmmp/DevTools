@@ -263,10 +263,14 @@ class DevTools extends PluginBase{
 			"protocol" => ProtocolInfo::CURRENT_PROTOCOL
 		];
 
-		$stub = sprintf(DEVTOOLS_REQUIRE_FILE_STUB, "src/pocketmine/PocketMine.php");
-
 		$filePath = realpath(\pocketmine\PATH) . DIRECTORY_SEPARATOR;
 		$filePath = rtrim($filePath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+
+		if(file_exists($filePath . 'src/PocketMine.php')){
+			$stub = sprintf(DEVTOOLS_REQUIRE_FILE_STUB, "src/PocketMine.php");
+		}else{
+			$stub = sprintf(DEVTOOLS_REQUIRE_FILE_STUB, "src/pocketmine/PocketMine.php"); //legacy stub
+		}
 
 		$this->buildPhar($sender, $pharPath, $filePath, ['src', 'vendor', 'resources'], $metadata, $stub, \Phar::SHA1);
 
