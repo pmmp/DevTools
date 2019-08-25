@@ -27,10 +27,10 @@ use function is_dir;
 
 class FolderPluginLoader implements PluginLoader{
 
-	/** @var \ClassLoader */
+	/** @var \DynamicClassLoader */
 	private $loader;
 
-	public function __construct(\ClassLoader $loader){
+	public function __construct(\DynamicClassLoader $loader){
 		$this->loader = $loader;
 	}
 
