@@ -17,11 +17,14 @@ You can then load the phar onto a PocketMine-MP server. A correctly-built DevToo
 You can also use the ConsoleScript or a DevTools phar from the command-line to build PocketMine-MP phars or plugin phars.
 
 The script currently takes the following arguments:
-- `--make`: The path to the files you want to bundle into a phar
-- `--relative`: (Optional) Relative path to use when building the phar. This usually isn't necessary for plugins. Used to build PocketMine-MP phars with the `src` directory without including the files in the repository root.
-- `--entry`: (Optional) PHP file within the phar to execute when running the phar from the command-line. Usually not needed for plugins, but required for a PocketMine-MP phar. Used to generate phar stubs.
-- `--stub`: (Optional) PHP file to use as a custom phar stub. The stub will be executed when the phar is run from the command line. 
-- `--out`: Path and filename of the output phar file.
+
+| argument | required | description |
+|:--------:|:--------:|:------------|
+| `--make` | yes | The path to the files you want to bundle into a phar |
+| `--relative` | no | Relative path to use when building the phar. This usually isn't necessary for plugins. Used to build PocketMine-MP phars with the `src` directory without including the files in the repository root. |
+| `--entry` | no | PHP file within the phar to execute when running the phar from the command-line. Usually not needed for plugins, but required for a PocketMine-MP phar. Used to generate phar stubs. |
+| `--stub` | no | (Optional) PHP file to use as a custom phar stub. The stub will be executed when the phar is run from the command line. |
+| `--out` | yes | Path and filename of the output phar file. |
 
 Example command line for building a plugin:
 ```
