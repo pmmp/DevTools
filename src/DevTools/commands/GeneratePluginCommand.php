@@ -2,7 +2,7 @@
 
 /*
  * DevTools plugin for PocketMine-MP
- * Copyright (C) 2017 PocketMine Team <https://github.com/pmmp/PocketMine-DevTools>
+ * Copyright (C) 2017-2019 PocketMine Team <https://github.com/pmmp/PocketMine-DevTools>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
