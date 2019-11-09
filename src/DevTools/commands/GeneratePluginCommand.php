@@ -76,27 +76,22 @@ class GeneratePluginCommand extends DevToolsCommand{
 
 		mkdir($rootDirectory . $namespacePath, 0755, true); //create all the needed directories
 
-		$pluginYmlTemplate = $this->getPlugin()->getResource("plugin_skeleton/plugin.yml");
 		$mainPhpTemplate = $this->getPlugin()->getResource("plugin_skeleton/Main.php");
 
 		try{
-			if($mainPhpTemplate === null or $pluginYmlTemplate === null){
+			if($mainPhpTemplate === null){
 				$sender->sendMessage(TextFormat::RED . "Error: missing template files");
 				return true;
 			}
 
-			$replace = [
-				"%{PluginName}" => $pluginName,
-				"%{ApiVersion}" => $this->getPlugin()->getServer()->getApiVersion(),
-				"%{AuthorName}" => $author,
-				"%{Namespace}" => $namespace
+			$manifest = [
+				"name" => $pluginName,
+				"version" => "0.0.1",
+				"main" => $namespace . "\\Main",
+				"api" => $this->getPlugin()->getServer()->getApiVersion()
 			];
 
-			file_put_contents($rootDirectory . "plugin.yml", str_replace(
-				array_keys($replace),
-				array_values($replace),
-				stream_get_contents($pluginYmlTemplate)
-			));
+			file_put_contents($rootDirectory . "plugin.yml", yaml_emit($manifest));
 
 			file_put_contents($rootDirectory . $namespacePath . "Main.php", str_replace(
 				"#%{Namespace}", "namespace " . $namespace . ";",
@@ -108,9 +103,6 @@ class GeneratePluginCommand extends DevToolsCommand{
 		}finally{
 			if($mainPhpTemplate !== null){
 				fclose($mainPhpTemplate);
-			}
-			if($pluginYmlTemplate !== null){
-				fclose($pluginYmlTemplate);
 			}
 		}
 	}
