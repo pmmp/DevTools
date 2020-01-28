@@ -24,7 +24,6 @@ use DevTools\commands\GeneratePluginCommand;
 use FolderPluginLoader\FolderPluginLoader;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\network\mcpe\protocol\ProtocolInfo;
 use pocketmine\permission\Permission;
 use pocketmine\permission\PermissionManager;
 use pocketmine\Player;
@@ -46,7 +45,6 @@ use function php_ini_loaded_file;
 use function realpath;
 use function rtrim;
 use function sprintf;
-use function strpos;
 use function strtolower;
 use function substr;
 use function time;
@@ -107,8 +105,6 @@ class DevTools extends PluginBase{
 					$this->makePluginCommand($sender, $args);
 					return true;
 				}
-			case "makeserver":
-				return $this->makeServerCommand($sender);
 			case "checkperm":
 				return $this->permissionCheckCommand($sender, $args);
 			default:
@@ -238,40 +234,6 @@ class DevTools extends PluginBase{
 		$this->buildPhar($sender, $pharPath, $filePath, [], $metadata, $stub, \Phar::SHA1);
 
 		$sender->sendMessage("Phar plugin " . $description->getName() . " v" . $description->getVersion() . " has been created on " . $pharPath);
-		return true;
-	}
-
-	private function makeServerCommand(CommandSender $sender) : bool{
-		if(ini_get('phar.readonly') !== '0'){
-			$sender->sendMessage(TextFormat::RED . "This command requires \"phar.readonly\" to be set to 0. Set it in " . php_ini_loaded_file() . " and restart the server.");
-			return true;
-		}
-		if(strpos(\pocketmine\PATH, "phar://") === 0){
-			$sender->sendMessage(TextFormat::RED . "This command can only be used on a server running from source code");
-			return true;
-		}
-
-		$server = $sender->getServer();
-		$pharPath = $this->getDataFolder() . $server->getName() . "_" . $server->getPocketMineVersion() . ".phar";
-
-		$metadata = [
-			"name" => $server->getName(),
-			"version" => $server->getPocketMineVersion(),
-			"api" => $server->getApiVersion(),
-			"minecraft" => $server->getVersion(),
-			"creationDate" => time(),
-			"protocol" => ProtocolInfo::CURRENT_PROTOCOL
-		];
-
-		$stub = sprintf(DEVTOOLS_REQUIRE_FILE_STUB, "src/pocketmine/PocketMine.php");
-
-		$filePath = realpath(\pocketmine\PATH) . DIRECTORY_SEPARATOR;
-		$filePath = rtrim($filePath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
-
-		$this->buildPhar($sender, $pharPath, $filePath, ['src', 'vendor'], $metadata, $stub, \Phar::SHA1);
-
-		$sender->sendMessage($server->getName() . " " . $server->getPocketMineVersion() . " Phar file has been created on " . $pharPath);
-
 		return true;
 	}
 
