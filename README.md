@@ -1,6 +1,7 @@
 # Development Tools <em>for PocketMine-MP</em>
 
 ## Usage
+* _/genplugin <pluginName> <authorName>_: Generates skeleton files for a new plugin
 * _/makeplugin \<pluginName\>_: Creates a Phar plugin archive for its distribution
 * _/makeplugin *_: Creates Phar plugin archives for all loaded plugins
 * _/checkperm \<node\> [playerName]_: Checks a permission node
