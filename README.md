@@ -1,6 +1,13 @@
 # Development Tools <em>for PocketMine-MP</em>
+DevTools is a collection of utilities used for developing PocketMine-MP plugins.
 
-## Usage
+## Features
+- Generate skeleton files to bootstrap a new plugin
+- Build plugin phars from source code
+- Load plugins directly from source code (folder plugins), useful for rapid development
+- Check player permissions using commands
+
+## Commands
 * _/genplugin <pluginName> <authorName>_: Generates skeleton files for a new plugin
 * _/makeplugin \<pluginName\>_: Creates a Phar plugin archive for its distribution
 * _/makeplugin *_: Creates Phar plugin archives for all loaded plugins
