@@ -23,8 +23,6 @@ namespace DevTools\commands;
 use DevTools\DevTools;
 use pocketmine\command\CommandSender;
 use pocketmine\utils\TextFormat;
-use function array_keys;
-use function array_values;
 use function count;
 use function ctype_digit;
 use function fclose;
