@@ -3,7 +3,6 @@
 ## Usage
 * _/makeplugin \<pluginName\>_: Creates a Phar plugin archive for its distribution
 * _/makeplugin *_: Creates Phar plugin archives for all loaded plugins
-* _/makeserver_: Creates a PocketMine-MP Phar archive
 * _/checkperm \<node\> [playerName]_: Checks a permission node
 
 ## Using ConsoleScript to build a DevTools phar from source code
@@ -13,7 +12,7 @@ php -dphar.readonly=0 path/to/ConsoleScript.php --make path/to/DevTools --relati
 ```
 You can then load the phar onto a PocketMine-MP server. A correctly-built DevTools phar can also be executed directly from the command line as if it was the ConsoleScript.
 
-## Build phars from the command line
+## Build plugin phars from the command line
 You can also use the ConsoleScript or a DevTools phar from the command-line to build PocketMine-MP phars or plugin phars.
 
 The script currently takes the following arguments:
@@ -30,9 +29,3 @@ Example command line for building a plugin:
 ```
 php -dphar.readonly=0 path/to/ConsoleScript.php --make path/to/your/plugin/sourcecode --out path/to/put/your/plugin.phar
 ```
-
-Example command line for building PocketMine-MP
-```
-php -dphar.readonly=0 path/to/ConsoleScript.php --make path/to/PocketMine-MP/src,path/to/PocketMine-MP/vendor --relative path/to/PocketMine-MP --entry path/to/PocketMine-MP/src/pocketmine/PocketMine.php --out path/to/put/your/PocketMine-MP.phar
-```
-**IMPORTANT - Don't forget to include the `vendor` directory when building PocketMine-MP!**
