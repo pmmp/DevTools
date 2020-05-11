@@ -44,7 +44,7 @@ class GeneratePluginCommand extends DevToolsCommand{
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
-		if(!$this->getPlugin()->isEnabled()){
+		if(!$this->getOwningPlugin()->isEnabled()){
 			return false;
 		}
 
@@ -63,8 +63,8 @@ class GeneratePluginCommand extends DevToolsCommand{
 			return true;
 		}
 
-		$rootDirectory = $this->getPlugin()->getServer()->getPluginPath() . $pluginName . DIRECTORY_SEPARATOR;
-		if($this->getPlugin()->getServer()->getPluginManager()->getPlugin($pluginName) !== null or file_exists($rootDirectory)){
+		$rootDirectory = $this->getOwningPlugin()->getServer()->getPluginPath() . $pluginName . DIRECTORY_SEPARATOR;
+		if($this->getOwningPlugin()->getServer()->getPluginManager()->getPlugin($pluginName) !== null or file_exists($rootDirectory)){
 			$sender->sendMessage(TextFormat::RED . "A plugin with this name already exists on the server. Please choose a different name or remove the other plugin.");
 			return true;
 		}
@@ -74,7 +74,7 @@ class GeneratePluginCommand extends DevToolsCommand{
 
 		mkdir($rootDirectory . $namespacePath, 0755, true); //create all the needed directories
 
-		$mainPhpTemplate = $this->getPlugin()->getResource("plugin_skeleton/Main.php");
+		$mainPhpTemplate = $this->getOwningPlugin()->getResource("plugin_skeleton/Main.php");
 
 		try{
 			if($mainPhpTemplate === null){
@@ -86,7 +86,7 @@ class GeneratePluginCommand extends DevToolsCommand{
 				"name" => $pluginName,
 				"version" => "0.0.1",
 				"main" => $namespace . "\\Main",
-				"api" => $this->getPlugin()->getServer()->getApiVersion()
+				"api" => $this->getOwningPlugin()->getServer()->getApiVersion()
 			];
 
 			file_put_contents($rootDirectory . "plugin.yml", yaml_emit($manifest));
