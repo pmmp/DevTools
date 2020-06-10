@@ -51,16 +51,17 @@ function preg_quote_array(array $strings, string $delim = null) : array{
  * @param string   $pharPath
  * @param string   $basePath
  * @param string[] $includedPaths
- * @param array    $metadata
+ * @param mixed[]  $metadata
  * @param string   $stub
  * @param int      $signatureAlgo
  * @param int|null $compression
+ * @phpstan-param array<string, mixed> $metadata
  *
  * @return Generator|string[]
  */
 function buildPhar(string $pharPath, string $basePath, array $includedPaths, array $metadata, string $stub, int $signatureAlgo = \Phar::SHA1, ?int $compression = null){
 	$basePath = rtrim(str_replace("/", DIRECTORY_SEPARATOR, $basePath), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
-	$includedPaths = array_map(function($path){
+	$includedPaths = array_map(function($path) : string{
 		return rtrim(str_replace("/", DIRECTORY_SEPARATOR, $path), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
 	}, $includedPaths);
 	if(file_exists($pharPath)){
@@ -126,6 +127,10 @@ function buildPhar(string $pharPath, string $basePath, array $includedPaths, arr
 	yield "Done in " . round(microtime(true) - $start, 3) . "s";
 }
 
+/**
+ * @return mixed[]|null
+ * @phpstan-return array<string, mixed>|null
+ */
 function generatePluginMetadataFromYml(string $pluginYmlPath) : ?array{
 	if(!file_exists($pluginYmlPath)){
 		return null;
@@ -161,7 +166,7 @@ function main() : void{
 	}
 
 	$includedPaths = explode(",", $opts["make"]);
-	array_walk($includedPaths, function(&$path, $key){
+	array_walk($includedPaths, function(&$path, $key) : void{
 		$realPath = realpath($path);
 		if($realPath === false){
 			echo "[ERROR] make directory `$path` does not exist or permission denied" . PHP_EOL;
