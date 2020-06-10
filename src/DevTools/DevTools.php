@@ -112,6 +112,9 @@ class DevTools extends PluginBase{
 		}
 	}
 
+	/**
+	 * @param string[] $args
+	 */
 	private function permissionCheckCommand(CommandSender $sender, array $args) : bool{
 		$target = $sender;
 		if(!isset($args[0])){
@@ -192,6 +195,9 @@ class DevTools extends PluginBase{
 		return true;
 	}
 
+	/**
+	 * @param string[] $args
+	 */
 	private function makePluginCommand(CommandSender $sender, array $args) : bool{
 		if(ini_get('phar.readonly') !== '0'){
 			$sender->sendMessage(TextFormat::RED . "This command requires \"phar.readonly\" to be set to 0. Set it in " . php_ini_loaded_file() . " and restart the server.");
@@ -237,6 +243,11 @@ class DevTools extends PluginBase{
 		return true;
 	}
 
+	/**
+	 * @param string[] $includedPaths
+	 * @param mixed[] $metadata
+	 * @phpstan-param array<string, mixed> $metadata
+	 */
 	private function buildPhar(CommandSender $sender, string $pharPath, string $basePath, array $includedPaths, array $metadata, string $stub, int $signatureAlgo = \Phar::SHA1) : void{
 		foreach(buildPhar($pharPath, $basePath, $includedPaths, $metadata, $stub, $signatureAlgo, \Phar::GZ) as $line){
 			$sender->sendMessage("[DevTools] $line");
