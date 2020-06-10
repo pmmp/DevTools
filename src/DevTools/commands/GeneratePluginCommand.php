@@ -106,7 +106,7 @@ class GeneratePluginCommand extends DevToolsCommand{
 	}
 
 	private static function correctNamespacePart(string $part) : string{
-		if(ctype_digit($part{0})){
+		if(ctype_digit($part[0])){
 			$part = "_" . $part;
 		}
 		return str_replace("-", "_", $part);
