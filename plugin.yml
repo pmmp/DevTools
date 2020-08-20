@@ -1,6 +1,6 @@
 name: DevTools
 main: DevTools\DevTools
-version: 1.14.0
+version: 1.14.1
 api: [3.13.0]
 load: STARTUP
 author: PocketMine Team
