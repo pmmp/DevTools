@@ -7,7 +7,6 @@ script:
 
 cache:
  directories:
-  - leveldb-mcpe
   - $HOME/.composer/cache/files
   - $HOME/.composer/cache/vcs
 
