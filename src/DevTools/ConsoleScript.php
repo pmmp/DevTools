@@ -25,15 +25,8 @@ const DEVTOOLS_PLUGIN_STUB = '
 echo "PocketMine-MP plugin %s v%s
 This file has been generated using DevTools v%s at %s
 ----------------
+%s
 ";
-
-if(extension_loaded("phar")){
-	$phar = new \Phar(__FILE__);
-	foreach($phar->getMetadata() as $key => $value){
-		echo ucfirst($key) . ": " . (is_array($value) ? implode(", ", $value) : $value) . "\n";
-	}
-}
-
 __HALT_COMPILER();
 ';
 
@@ -229,7 +222,11 @@ function main() : void{
 			exit(1);
 		}
 
-		$stub = sprintf(DEVTOOLS_PLUGIN_STUB, $metadata["name"], $metadata["version"], DEVTOOLS_VERSION, date("r"));
+		$stubMetadata = [];
+		foreach($metadata as $key => $value){
+			$stubMetadata[] = addslashes(ucfirst($key) . ": " . (is_array($value) ? implode(", ", $value) : $value));
+		}
+		$stub = sprintf(DEVTOOLS_PLUGIN_STUB, $metadata["name"], $metadata["version"], DEVTOOLS_VERSION, date("r"), implode("\n", $stubMetadata));
 	}
 
 	echo PHP_EOL;
