@@ -19,7 +19,6 @@ declare(strict_types=1);
 
 namespace DevTools\commands;
 
-
 use DevTools\DevTools;
 use pocketmine\command\CommandSender;
 use pocketmine\utils\TextFormat;

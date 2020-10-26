@@ -153,7 +153,6 @@ class DevTools extends PluginBase{
 		}
 	}
 
-
 	private function makePluginLoader(CommandSender $sender) : bool{
 		if(ini_get('phar.readonly') !== '0'){
 			$sender->sendMessage(TextFormat::RED . "This command requires \"phar.readonly\" to be set to 0. Set it in " . php_ini_loaded_file() . " and restart the server.");
