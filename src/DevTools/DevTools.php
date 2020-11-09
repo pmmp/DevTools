@@ -29,7 +29,7 @@ use pocketmine\permission\PermissionManager;
 use pocketmine\player\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginBase;
-use pocketmine\plugin\PluginLoadOrder;
+use pocketmine\plugin\PluginEnableOrder;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use function assert;
@@ -68,7 +68,7 @@ class DevTools extends PluginBase{
 		$this->getServer()->getPluginManager()->registerInterface(new FolderPluginLoader($this->getServer()->getLoader()));
 		$this->getServer()->getPluginManager()->loadPlugins($this->getServer()->getPluginPath(), [FolderPluginLoader::class]);
 		$this->getLogger()->info("Registered folder plugin loader");
-		$this->getServer()->enablePlugins(PluginLoadOrder::STARTUP());
+		$this->getServer()->enablePlugins(PluginEnableOrder::STARTUP());
 
 	}
 
