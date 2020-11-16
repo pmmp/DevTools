@@ -122,7 +122,7 @@ class DevTools extends PluginBase{
 		}
 		$node = strtolower($args[0]);
 		if(isset($args[1])){
-			if(($player = $this->getServer()->getPlayer($args[1])) instanceof Player){
+			if(($player = $this->getServer()->getPlayerByPrefix($args[1])) instanceof Player){
 				$target = $player;
 			}else{
 				return false;
