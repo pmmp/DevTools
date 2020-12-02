@@ -137,7 +137,6 @@ class DevTools extends PluginBase{
 			$perm = PermissionManager::getInstance()->getPermission($node);
 			if($perm instanceof Permission){
 				$desc = TextFormat::GOLD . "Description: " . TextFormat::WHITE . $perm->getDescription() . "\n";
-				$desc .= TextFormat::GOLD . "Default: " . TextFormat::WHITE . $perm->getDefault() . "\n";
 				$children = "";
 				foreach($perm->getChildren() as $name => $true){
 					$children .= $name . ", ";
@@ -145,7 +144,6 @@ class DevTools extends PluginBase{
 				$desc .= TextFormat::GOLD . "Children: " . TextFormat::WHITE . substr($children, 0, -2) . "\n";
 			}else{
 				$desc = TextFormat::RED . "Permission does not exist\n";
-				$desc .= TextFormat::GOLD . "Default: " . TextFormat::WHITE . Permission::$DEFAULT_PERMISSION . "\n";
 			}
 			$sender->sendMessage($desc);
 			$sender->sendMessage(TextFormat::YELLOW . $target->getName() . TextFormat::WHITE . " has it set to " . ($target->hasPermission($node) === true ? TextFormat::GREEN . "true" : TextFormat::RED . "false"));
