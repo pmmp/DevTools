@@ -24,7 +24,9 @@ use DevTools\commands\GeneratePluginCommand;
 use FolderPluginLoader\FolderPluginLoader;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
+use pocketmine\permission\Permissible;
 use pocketmine\permission\Permission;
+use pocketmine\permission\PermissionAttachmentInfo;
 use pocketmine\permission\PermissionManager;
 use pocketmine\player\Player;
 use pocketmine\plugin\Plugin;
@@ -146,11 +148,52 @@ class DevTools extends PluginBase{
 				$desc = TextFormat::RED . "Permission does not exist\n";
 			}
 			$sender->sendMessage($desc);
-			$sender->sendMessage(TextFormat::YELLOW . $target->getName() . TextFormat::WHITE . " has it set to " . ($target->hasPermission($node) === true ? TextFormat::GREEN . "true" : TextFormat::RED . "false"));
+			$coloredName = TextFormat::YELLOW . $target->getName() . TextFormat::RESET;
+			$sender->sendMessage(TextFormat::GOLD . "Permission info for $coloredName:");
+			foreach($this->describePermissionSet($target, $node) as $line){
+				$sender->sendMessage("- " . $line);
+			}
 			return true;
 		}
 	}
 
+	private function describePermissionSet(Permissible $sender, string $permission) : array{
+		$permInfo = $sender->getEffectivePermissions()[$permission] ?? null;
+		if($permInfo === null){
+			return [
+				TextFormat::RED . $permission . TextFormat::WHITE . " is not set (default " . TextFormat::RED . "false" . TextFormat::WHITE . ")"
+			];
+		}
+		$result = [];
+		$permColor = static function(PermissionAttachmentInfo $info, bool $dark) : string{
+			if($info->getValue()){
+				$color = $dark ? TextFormat::DARK_GREEN : TextFormat::GREEN;
+			}else{
+				$color = $dark ? TextFormat::DARK_RED : TextFormat::RED;
+			}
+			return sprintf("%s%s%s", $color, $info->getPermission(), TextFormat::WHITE);
+		};
+		$permValue = static function(bool $value) : string{
+			return ($value ? TextFormat::GREEN . "true" : TextFormat::RED . "false") . TextFormat::WHITE;
+		};
+		while(true){
+			$groupPermInfo = $permInfo->getGroupPermissionInfo();
+			if($groupPermInfo !== null){
+				$result[] = $permColor($permInfo, false) . " is set to " . $permValue($permInfo->getValue()) . " by " . $permColor($groupPermInfo, true);
+				$permInfo = $groupPermInfo;
+			}else{
+				$permOrigin = $permInfo->getAttachment();
+				if($permOrigin !== null){
+					$originName = "plugin " . TextFormat::GREEN . $permOrigin->getPlugin()->getName();
+				}else{
+					$originName = "base permission";
+				}
+				$result[] = $permColor($permInfo, false) . " is set to " . $permValue($permInfo->getValue()) . " explicitly by $originName" . TextFormat::WHITE;
+				break;
+			}
+		}
+		return $result;
+	}
 
 	private function makePluginLoader(CommandSender $sender) : bool{
 		if(ini_get('phar.readonly') !== '0'){
