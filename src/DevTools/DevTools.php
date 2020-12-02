@@ -48,7 +48,6 @@ use function realpath;
 use function rtrim;
 use function sprintf;
 use function strtolower;
-use function substr;
 use function time;
 use function trim;
 use const DEVTOOLS_PLUGIN_STUB;
@@ -139,11 +138,11 @@ class DevTools extends PluginBase{
 			$perm = PermissionManager::getInstance()->getPermission($node);
 			if($perm instanceof Permission){
 				$desc = TextFormat::GOLD . "Description: " . TextFormat::WHITE . $perm->getDescription() . "\n";
-				$children = "";
-				foreach($perm->getChildren() as $name => $true){
-					$children .= $name . ", ";
+				$children = [];
+				foreach($perm->getChildren() as $name => $isGranted){
+					$children[] = ($isGranted ? TextFormat::GREEN : TextFormat::RED) . $name . TextFormat::WHITE;
 				}
-				$desc .= TextFormat::GOLD . "Children: " . TextFormat::WHITE . substr($children, 0, -2) . "\n";
+				$desc .= TextFormat::GOLD . "Children: " . TextFormat::WHITE . implode(", ", $children) . "\n";
 			}else{
 				$desc = TextFormat::RED . "Permission does not exist\n";
 			}
