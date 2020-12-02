@@ -158,6 +158,10 @@ class DevTools extends PluginBase{
 		}
 	}
 
+	/**
+	 * @return string[]
+	 * @phpstan-return list<string>
+	 */
 	private function describePermissionSet(Permissible $sender, string $permission) : array{
 		$permInfo = $sender->getEffectivePermissions()[$permission] ?? null;
 		if($permInfo === null){
