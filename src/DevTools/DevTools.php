@@ -108,6 +108,8 @@ class DevTools extends PluginBase{
 				}
 			case "checkperm":
 				return $this->permissionCheckCommand($sender, $args);
+			case "listperms":
+				return $this->permissionListCommand($sender, $args);
 			default:
 				return false;
 		}
@@ -164,6 +166,15 @@ class DevTools extends PluginBase{
 			];
 		}
 		$result = [];
+
+		while($permInfo !== null){
+			$result[] = $this->describePermission($permInfo);
+			$permInfo = $permInfo->getGroupPermissionInfo();
+		}
+		return $result;
+	}
+
+	private function describePermission(PermissionAttachmentInfo $permInfo) : string{
 		$permColor = static function(PermissionAttachmentInfo $info, bool $dark) : string{
 			if($info->getValue()){
 				$color = $dark ? TextFormat::DARK_GREEN : TextFormat::GREEN;
@@ -175,23 +186,44 @@ class DevTools extends PluginBase{
 		$permValue = static function(bool $value) : string{
 			return ($value ? TextFormat::GREEN . "true" : TextFormat::RED . "false") . TextFormat::WHITE;
 		};
-		while(true){
-			$groupPermInfo = $permInfo->getGroupPermissionInfo();
-			if($groupPermInfo !== null){
-				$result[] = $permColor($permInfo, false) . " is set to " . $permValue($permInfo->getValue()) . " by " . $permColor($groupPermInfo, true);
-				$permInfo = $groupPermInfo;
+
+		$groupPermInfo = $permInfo->getGroupPermissionInfo();
+		if($groupPermInfo !== null){
+			return $permColor($permInfo, false) . " is set to " . $permValue($permInfo->getValue()) . " by " . $permColor($groupPermInfo, true);
+		}else{
+			$permOrigin = $permInfo->getAttachment();
+			if($permOrigin !== null){
+				$originName = "plugin " . TextFormat::GREEN . $permOrigin->getPlugin()->getName();
 			}else{
-				$permOrigin = $permInfo->getAttachment();
-				if($permOrigin !== null){
-					$originName = "plugin " . TextFormat::GREEN . $permOrigin->getPlugin()->getName();
-				}else{
-					$originName = "base permission";
-				}
-				$result[] = $permColor($permInfo, false) . " is set to " . $permValue($permInfo->getValue()) . " explicitly by $originName" . TextFormat::WHITE;
-				break;
+				$originName = "base permission";
+			}
+			return $permColor($permInfo, false) . " is set to " . $permValue($permInfo->getValue()) . " explicitly by $originName" . TextFormat::WHITE;
+		}
+	}
+
+	/**
+	 * @param string[] $args
+	 */
+	private function permissionListCommand(CommandSender $sender, array $args) : bool{
+		$target = $sender;
+		if(isset($args[0])){
+			if(($player = $this->getServer()->getPlayerByPrefix($args[0])) instanceof Player){
+				$target = $player;
+			}else{
+				return false;
 			}
 		}
-		return $result;
+
+		if($target !== $sender and !$sender->hasPermission("devtools.command.listperms.other")){
+			$sender->sendMessage(TextFormat::RED . "You do not have permissions to check other players.");
+			return true;
+		}else{
+			$sender->sendMessage(TextFormat::GOLD . "--- Permissions assigned to " . TextFormat::YELLOW . $target->getName() . TextFormat::GOLD . " ---");
+			foreach($target->getEffectivePermissions() as $permissionAttachmentInfo){
+				$sender->sendMessage("- " . $this->describePermission($permissionAttachmentInfo));
+			}
+			return true;
+		}
 	}
 
 	private function makePluginLoader(CommandSender $sender) : bool{

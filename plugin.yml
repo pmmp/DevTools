@@ -15,6 +15,10 @@ commands:
   description: Checks a permission value for the current sender, or a player
   usage: "/checkperm <node> [playerName]"
   permission: "devtools.command.checkperm;devtools.command.checkperm.other"
+ listperms:
+  description: Lists all the permission nodes set on the executor, or a player
+  usage: "/listperms [playerName]"
+  permission: "devtools.command.listperms.self;devtools.command.listperms.other"
 permissions:
  devtools:
   default: op
@@ -40,4 +44,10 @@ permissions:
      devtools.command.genplugin:
       default: op
       description: "Allows the user to generate skeleton files for a plugin"
+     devtools.command.listperms.self:
+      default: op
+      description: "Allows the user to list their own permissions"
+     devtools.command.listperms.other:
+      default: op
+      description: "Allows the user to list another player's permissions"
 
