@@ -293,12 +293,6 @@ class DevTools extends PluginBase{
 
 		$pharPath = $this->getDataFolder() . $description->getName() . "_v" . $description->getVersion() . ".phar";
 
-		if($description->getName() === "DevTools"){
-			$stub = sprintf(DEVTOOLS_REQUIRE_FILE_STUB, "src/DevTools/ConsoleScript.php");
-		}else{
-			$stub = sprintf(DEVTOOLS_PLUGIN_STUB, $description->getName(), $description->getVersion(), $this->getDescription()->getVersion(), date("r"));
-		}
-
 		$reflection = new \ReflectionClass(PluginBase::class);
 		$file = $reflection->getProperty("file");
 		$file->setAccessible(true);
@@ -312,6 +306,16 @@ class DevTools extends PluginBase{
 
 		$metadata = generatePluginMetadataFromYml($filePath . "plugin.yml");
 		assert($metadata !== null);
+
+		if($description->getName() === "DevTools"){
+			$stub = sprintf(DEVTOOLS_REQUIRE_FILE_STUB, "src/DevTools/ConsoleScript.php");
+		}else{
+			$stubMetadata = [];
+			foreach($metadata as $key => $value){
+				$stubMetadata[] = addslashes(ucfirst($key) . ": " . (is_array($value) ? implode(", ", $value) : $value));
+			}
+			$stub = sprintf(DEVTOOLS_PLUGIN_STUB, $description->getName(), $description->getVersion(), $this->getDescription()->getVersion(), date("r"), implode("\n", $stubMetadata));
+		}
 
 		$this->buildPhar($sender, $pharPath, $filePath, [], $metadata, $stub, \Phar::SHA1);
 

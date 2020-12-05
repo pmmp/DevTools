@@ -19,7 +19,6 @@ declare(strict_types=1);
 
 namespace DevTools\commands;
 
-
 use DevTools\DevTools;
 use pocketmine\command\CommandSender;
 use pocketmine\utils\TextFormat;
@@ -32,6 +31,7 @@ use function mkdir;
 use function preg_match;
 use function str_replace;
 use function stream_get_contents;
+use function yaml_emit;
 use const DIRECTORY_SEPARATOR;
 
 class GeneratePluginCommand extends DevToolsCommand{
