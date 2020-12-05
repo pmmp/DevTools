@@ -20,34 +20,25 @@ commands:
   usage: "/listperms [playerName]"
   permission: "devtools.command.listperms.self;devtools.command.listperms.other"
 permissions:
- devtools:
+ devtools.command.makeplugin:
   default: op
-  description: "Allows using all the DevTools things"
-  children:
-   devtools.command:
-    default: op
-    description: "Allows using all the DevTools commands"
-    children:
-     devtools.command.makeplugin:
-      default: op
-      description: "Allows the creation of Phar plugins"
-     devtools.command.extractplugin:
-      default: op
-      description: "Allows the extraction of Phar plugins"
-     devtools.command.checkperm:
-      default: true
-      description: "Allows checking a permission value"
-      children:
-       devtools.command.checkperm.other:
-        default: op
-        description: "Allows checking others permission value"
-     devtools.command.genplugin:
-      default: op
-      description: "Allows the user to generate skeleton files for a plugin"
-     devtools.command.listperms.self:
-      default: op
-      description: "Allows the user to list their own permissions"
-     devtools.command.listperms.other:
-      default: op
-      description: "Allows the user to list another player's permissions"
+  description: "Allows the creation of Phar plugins"
+ devtools.command.extractplugin:
+  default: op
+  description: "Allows the extraction of Phar plugins"
+ devtools.command.checkperm:
+  default: true
+  description: "Allows checking a permission value"
+ devtools.command.checkperm.other:
+  default: op
+  description: "Allows checking others permission value"
+ devtools.command.genplugin:
+  default: op
+  description: "Allows the user to generate skeleton files for a plugin"
+ devtools.command.listperms.self:
+  default: op
+  description: "Allows the user to list their own permissions"
+ devtools.command.listperms.other:
+  default: op
+  description: "Allows the user to list another player's permissions"
 
