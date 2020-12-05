@@ -16,28 +16,19 @@ commands:
   usage: "/checkperm <node> [playerName]"
   permission: "devtools.command.checkperm;devtools.command.checkperm.other"
 permissions:
- devtools:
+ devtools.command.makeplugin:
   default: op
-  description: "Allows using all the DevTools things"
-  children:
-   devtools.command:
-    default: op
-    description: "Allows using all the DevTools commands"
-    children:
-     devtools.command.makeplugin:
-      default: op
-      description: "Allows the creation of Phar plugins"
-     devtools.command.extractplugin:
-      default: op
-      description: "Allows the extraction of Phar plugins"
-     devtools.command.checkperm:
-      default: true
-      description: "Allows checking a permission value"
-      children:
-       devtools.command.checkperm.other:
-        default: op
-        description: "Allows checking others permission value"
-     devtools.command.genplugin:
-      default: op
-      description: "Allows the user to generate skeleton files for a plugin"
+  description: "Allows the creation of Phar plugins"
+ devtools.command.extractplugin:
+  default: op
+  description: "Allows the extraction of Phar plugins"
+ devtools.command.checkperm:
+  default: true
+  description: "Allows checking a permission value"
+ devtools.command.checkperm.other:
+  default: op
+  description: "Allows checking others permission value"
+ devtools.command.genplugin:
+  default: op
+  description: "Allows the user to generate skeleton files for a plugin"
 
