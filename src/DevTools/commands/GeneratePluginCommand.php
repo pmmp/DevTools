@@ -70,7 +70,7 @@ class GeneratePluginCommand extends DevToolsCommand{
 		}
 
 		$namespace = self::correctNamespacePart($author) . "\\" . self::correctNamespacePart($pluginName);
-		$namespacePath = "src" . DIRECTORY_SEPARATOR . str_replace("\\", DIRECTORY_SEPARATOR, $namespace) . DIRECTORY_SEPARATOR;
+		$namespacePath = "src" . DIRECTORY_SEPARATOR;
 
 		mkdir($rootDirectory . $namespacePath, 0755, true); //create all the needed directories
 
@@ -86,7 +86,8 @@ class GeneratePluginCommand extends DevToolsCommand{
 				"name" => $pluginName,
 				"version" => "0.0.1",
 				"main" => $namespace . "\\Main",
-				"api" => $this->getOwningPlugin()->getServer()->getApiVersion()
+				"api" => $this->getOwningPlugin()->getServer()->getApiVersion(),
+				"src-namespace-prefix" => $namespace
 			];
 
 			file_put_contents($rootDirectory . "plugin.yml", yaml_emit($manifest));
