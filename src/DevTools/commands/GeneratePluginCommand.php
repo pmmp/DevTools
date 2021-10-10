@@ -19,7 +19,6 @@ declare(strict_types=1);
 
 namespace DevTools\commands;
 
-
 use DevTools\DevTools;
 use pocketmine\command\CommandSender;
 use pocketmine\utils\TextFormat;
@@ -32,6 +31,7 @@ use function mkdir;
 use function preg_match;
 use function str_replace;
 use function stream_get_contents;
+use function yaml_emit;
 use const DIRECTORY_SEPARATOR;
 
 class GeneratePluginCommand extends DevToolsCommand{
@@ -44,7 +44,7 @@ class GeneratePluginCommand extends DevToolsCommand{
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
-		if(!$this->getPlugin()->isEnabled()){
+		if(!$this->getOwningPlugin()->isEnabled()){
 			return false;
 		}
 
@@ -63,18 +63,18 @@ class GeneratePluginCommand extends DevToolsCommand{
 			return true;
 		}
 
-		$rootDirectory = $this->getPlugin()->getServer()->getPluginPath() . $pluginName . DIRECTORY_SEPARATOR;
-		if($this->getPlugin()->getServer()->getPluginManager()->getPlugin($pluginName) !== null or file_exists($rootDirectory)){
+		$rootDirectory = $this->getOwningPlugin()->getServer()->getPluginPath() . $pluginName . DIRECTORY_SEPARATOR;
+		if($this->getOwningPlugin()->getServer()->getPluginManager()->getPlugin($pluginName) !== null or file_exists($rootDirectory)){
 			$sender->sendMessage(TextFormat::RED . "A plugin with this name already exists on the server. Please choose a different name or remove the other plugin.");
 			return true;
 		}
 
 		$namespace = self::correctNamespacePart($author) . "\\" . self::correctNamespacePart($pluginName);
-		$namespacePath = "src" . DIRECTORY_SEPARATOR . str_replace("\\", DIRECTORY_SEPARATOR, $namespace) . DIRECTORY_SEPARATOR;
+		$namespacePath = "src" . DIRECTORY_SEPARATOR;
 
 		mkdir($rootDirectory . $namespacePath, 0755, true); //create all the needed directories
 
-		$mainPhpTemplate = $this->getPlugin()->getResource("plugin_skeleton/Main.php");
+		$mainPhpTemplate = $this->getOwningPlugin()->getResource("plugin_skeleton/Main.php");
 
 		try{
 			if($mainPhpTemplate === null){
@@ -86,7 +86,8 @@ class GeneratePluginCommand extends DevToolsCommand{
 				"name" => $pluginName,
 				"version" => "0.0.1",
 				"main" => $namespace . "\\Main",
-				"api" => $this->getPlugin()->getServer()->getApiVersion()
+				"api" => $this->getOwningPlugin()->getServer()->getApiVersion(),
+				"src-namespace-prefix" => $namespace
 			];
 
 			file_put_contents($rootDirectory . "plugin.yml", yaml_emit($manifest));
@@ -106,7 +107,7 @@ class GeneratePluginCommand extends DevToolsCommand{
 	}
 
 	private static function correctNamespacePart(string $part) : string{
-		if(ctype_digit($part{0})){
+		if(ctype_digit($part[0])){
 			$part = "_" . $part;
 		}
 		return str_replace("-", "_", $part);

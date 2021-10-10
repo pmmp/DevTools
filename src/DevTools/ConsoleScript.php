@@ -17,7 +17,7 @@ declare(strict_types=1);
  * GNU General Public License for more details.
 */
 
-const DEVTOOLS_VERSION = "1.14.0";
+const DEVTOOLS_VERSION = "1.14.2";
 
 const DEVTOOLS_REQUIRE_FILE_STUB = '<?php require("phar://" . __FILE__ . "/%s"); __HALT_COMPILER();';
 const DEVTOOLS_PLUGIN_STUB = '
@@ -25,15 +25,8 @@ const DEVTOOLS_PLUGIN_STUB = '
 echo "PocketMine-MP plugin %s v%s
 This file has been generated using DevTools v%s at %s
 ----------------
+%s
 ";
-
-if(extension_loaded("phar")){
-	$phar = new \Phar(__FILE__);
-	foreach($phar->getMetadata() as $key => $value){
-		echo ucfirst($key) . ": " . (is_array($value) ? implode(", ", $value) : $value) . "\n";
-	}
-}
-
 __HALT_COMPILER();
 ';
 
@@ -51,17 +44,19 @@ function preg_quote_array(array $strings, string $delim = null) : array{
  * @param string   $pharPath
  * @param string   $basePath
  * @param string[] $includedPaths
- * @param array    $metadata
+ * @param mixed[]  $metadata
  * @param string   $stub
  * @param int      $signatureAlgo
  * @param int|null $compression
+ * @phpstan-param array<string, mixed> $metadata
  *
  * @return Generator|string[]
  */
 function buildPhar(string $pharPath, string $basePath, array $includedPaths, array $metadata, string $stub, int $signatureAlgo = \Phar::SHA1, ?int $compression = null){
 	$basePath = rtrim(str_replace("/", DIRECTORY_SEPARATOR, $basePath), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
-	$includedPaths = array_map(function($path){
-		return rtrim(str_replace("/", DIRECTORY_SEPARATOR, $path), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+	$includedPaths = array_map(function($path) : string{
+		$path = rtrim(str_replace("/", DIRECTORY_SEPARATOR, $path), DIRECTORY_SEPARATOR);
+		return is_dir($path) ? $path . DIRECTORY_SEPARATOR : $path;
 	}, $includedPaths);
 	if(file_exists($pharPath)){
 		yield "Phar file already exists, overwriting...";
@@ -126,6 +121,10 @@ function buildPhar(string $pharPath, string $basePath, array $includedPaths, arr
 	yield "Done in " . round(microtime(true) - $start, 3) . "s";
 }
 
+/**
+ * @return mixed[]|null
+ * @phpstan-return array<string, mixed>|null
+ */
 function generatePluginMetadataFromYml(string $pluginYmlPath) : ?array{
 	if(!file_exists($pluginYmlPath)){
 		return null;
@@ -161,7 +160,7 @@ function main() : void{
 	}
 
 	$includedPaths = explode(",", $opts["make"]);
-	array_walk($includedPaths, function(&$path, $key){
+	array_walk($includedPaths, function(&$path, $key) : void{
 		$realPath = realpath($path);
 		if($realPath === false){
 			echo "[ERROR] make directory `$path` does not exist or permission denied" . PHP_EOL;
@@ -224,7 +223,11 @@ function main() : void{
 			exit(1);
 		}
 
-		$stub = sprintf(DEVTOOLS_PLUGIN_STUB, $metadata["name"], $metadata["version"], DEVTOOLS_VERSION, date("r"));
+		$stubMetadata = [];
+		foreach($metadata as $key => $value){
+			$stubMetadata[] = addslashes(ucfirst($key) . ": " . (is_array($value) ? implode(", ", $value) : $value));
+		}
+		$stub = sprintf(DEVTOOLS_PLUGIN_STUB, $metadata["name"], $metadata["version"], DEVTOOLS_VERSION, date("r"), implode("\n", $stubMetadata));
 	}
 
 	echo PHP_EOL;

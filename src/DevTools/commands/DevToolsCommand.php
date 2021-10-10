@@ -21,10 +21,10 @@ namespace DevTools\commands;
 
 use DevTools\DevTools;
 use pocketmine\command\Command;
-use pocketmine\command\PluginIdentifiableCommand;
 use pocketmine\plugin\Plugin;
+use pocketmine\plugin\PluginOwned;
 
-abstract class DevToolsCommand extends Command implements PluginIdentifiableCommand{
+abstract class DevToolsCommand extends Command implements PluginOwned{
 	/** @var DevTools */
 	private $owningPlugin;
 
@@ -37,7 +37,7 @@ abstract class DevToolsCommand extends Command implements PluginIdentifiableComm
 	/**
 	 * @return DevTools
 	 */
-	public function getPlugin() : Plugin{
+	public function getOwningPlugin() : Plugin{
 		return $this->owningPlugin;
 	}
 }

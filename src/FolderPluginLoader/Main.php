@@ -20,13 +20,13 @@ declare(strict_types=1);
 namespace FolderPluginLoader;
 
 use pocketmine\plugin\PluginBase;
-use pocketmine\plugin\PluginLoadOrder;
+use pocketmine\plugin\PluginEnableOrder;
 
 class Main extends PluginBase{
 
 	public function onEnable() : void{
 		$this->getServer()->getPluginManager()->registerInterface(new FolderPluginLoader($this->getServer()->getLoader()));
 		$this->getServer()->getPluginManager()->loadPlugins($this->getServer()->getPluginPath(), [FolderPluginLoader::class]);
-		$this->getServer()->enablePlugins(PluginLoadOrder::STARTUP());
+		$this->getServer()->enablePlugins(PluginEnableOrder::STARTUP());
 	}
 }

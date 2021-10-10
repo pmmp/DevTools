@@ -48,7 +48,7 @@ class ExtractPluginCommand extends DevToolsCommand{
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
-		if(!$this->getPlugin()->isEnabled()){
+		if(!$this->getOwningPlugin()->isEnabled()){
 			return false;
 		}
 
@@ -73,7 +73,7 @@ class ExtractPluginCommand extends DevToolsCommand{
 			return true;
 		}
 
-		$folderPath = $this->getPlugin()->getDataFolder() . DIRECTORY_SEPARATOR . $description->getName() . "_v" . $description->getVersion() . "/";
+		$folderPath = $this->getOwningPlugin()->getDataFolder() . DIRECTORY_SEPARATOR . $description->getName() . "_v" . $description->getVersion() . "/";
 		if(file_exists($folderPath)){
 			$sender->sendMessage("Plugin already exists, overwriting...");
 		}else{

@@ -24,12 +24,14 @@ use DevTools\commands\GeneratePluginCommand;
 use FolderPluginLoader\FolderPluginLoader;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
+use pocketmine\permission\Permissible;
 use pocketmine\permission\Permission;
+use pocketmine\permission\PermissionAttachmentInfo;
 use pocketmine\permission\PermissionManager;
 use pocketmine\player\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginBase;
-use pocketmine\plugin\PluginLoadOrder;
+use pocketmine\plugin\PluginEnableOrder;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use function assert;
@@ -46,7 +48,6 @@ use function realpath;
 use function rtrim;
 use function sprintf;
 use function strtolower;
-use function substr;
 use function time;
 use function trim;
 use const DEVTOOLS_PLUGIN_STUB;
@@ -67,7 +68,7 @@ class DevTools extends PluginBase{
 
 		$this->getServer()->getPluginManager()->registerInterface(new FolderPluginLoader($this->getServer()->getLoader()));
 		$this->getServer()->getPluginManager()->loadPlugins($this->getServer()->getPluginPath(), [FolderPluginLoader::class]);
-		$this->getServer()->enablePlugins(PluginLoadOrder::STARTUP());
+		$this->getServer()->enablePlugins(PluginEnableOrder::STARTUP());
 
 	}
 
@@ -106,11 +107,16 @@ class DevTools extends PluginBase{
 				}
 			case "checkperm":
 				return $this->permissionCheckCommand($sender, $args);
+			case "listperms":
+				return $this->permissionListCommand($sender, $args);
 			default:
 				return false;
 		}
 	}
 
+	/**
+	 * @param string[] $args
+	 */
 	private function permissionCheckCommand(CommandSender $sender, array $args) : bool{
 		$target = $sender;
 		if(!isset($args[0])){
@@ -118,7 +124,7 @@ class DevTools extends PluginBase{
 		}
 		$node = strtolower($args[0]);
 		if(isset($args[1])){
-			if(($player = $this->getServer()->getPlayer($args[1])) instanceof Player){
+			if(($player = $this->getServer()->getPlayerByPrefix($args[1])) instanceof Player){
 				$target = $player;
 			}else{
 				return false;
@@ -133,22 +139,95 @@ class DevTools extends PluginBase{
 			$perm = PermissionManager::getInstance()->getPermission($node);
 			if($perm instanceof Permission){
 				$desc = TextFormat::GOLD . "Description: " . TextFormat::WHITE . $perm->getDescription() . "\n";
-				$desc .= TextFormat::GOLD . "Default: " . TextFormat::WHITE . $perm->getDefault() . "\n";
-				$children = "";
-				foreach($perm->getChildren() as $name => $true){
-					$children .= $name . ", ";
+				$children = [];
+				foreach($perm->getChildren() as $name => $isGranted){
+					$children[] = ($isGranted ? TextFormat::GREEN : TextFormat::RED) . $name . TextFormat::WHITE;
 				}
-				$desc .= TextFormat::GOLD . "Children: " . TextFormat::WHITE . substr($children, 0, -2) . "\n";
+				$desc .= TextFormat::GOLD . "Children: " . TextFormat::WHITE . implode(", ", $children) . "\n";
 			}else{
 				$desc = TextFormat::RED . "Permission does not exist\n";
-				$desc .= TextFormat::GOLD . "Default: " . TextFormat::WHITE . Permission::$DEFAULT_PERMISSION . "\n";
 			}
 			$sender->sendMessage($desc);
-			$sender->sendMessage(TextFormat::YELLOW . $target->getName() . TextFormat::WHITE . " has it set to " . ($target->hasPermission($node) === true ? TextFormat::GREEN . "true" : TextFormat::RED . "false"));
+			$coloredName = TextFormat::YELLOW . $target->getName() . TextFormat::RESET;
+			$sender->sendMessage(TextFormat::GOLD . "Permission info for $coloredName:");
+			foreach($this->describePermissionSet($target, $node) as $line){
+				$sender->sendMessage("- " . $line);
+			}
 			return true;
 		}
 	}
 
+	/**
+	 * @return string[]
+	 * @phpstan-return list<string>
+	 */
+	private function describePermissionSet(Permissible $sender, string $permission) : array{
+		$permInfo = $sender->getEffectivePermissions()[$permission] ?? null;
+		if($permInfo === null){
+			return [
+				TextFormat::RED . $permission . TextFormat::WHITE . " is not set (default " . TextFormat::RED . "false" . TextFormat::WHITE . ")"
+			];
+		}
+		$result = [];
+
+		while($permInfo !== null){
+			$result[] = $this->describePermission($permInfo);
+			$permInfo = $permInfo->getGroupPermissionInfo();
+		}
+		return $result;
+	}
+
+	private function describePermission(PermissionAttachmentInfo $permInfo) : string{
+		$permColor = static function(PermissionAttachmentInfo $info, bool $dark) : string{
+			if($info->getValue()){
+				$color = $dark ? TextFormat::DARK_GREEN : TextFormat::GREEN;
+			}else{
+				$color = $dark ? TextFormat::DARK_RED : TextFormat::RED;
+			}
+			return sprintf("%s%s%s", $color, $info->getPermission(), TextFormat::WHITE);
+		};
+		$permValue = static function(bool $value) : string{
+			return ($value ? TextFormat::GREEN . "true" : TextFormat::RED . "false") . TextFormat::WHITE;
+		};
+
+		$groupPermInfo = $permInfo->getGroupPermissionInfo();
+		if($groupPermInfo !== null){
+			return $permColor($permInfo, false) . " is set to " . $permValue($permInfo->getValue()) . " by " . $permColor($groupPermInfo, true);
+		}else{
+			$permOrigin = $permInfo->getAttachment();
+			if($permOrigin !== null){
+				$originName = "plugin " . TextFormat::GREEN . $permOrigin->getPlugin()->getName();
+			}else{
+				$originName = "base permission";
+			}
+			return $permColor($permInfo, false) . " is set to " . $permValue($permInfo->getValue()) . " explicitly by $originName" . TextFormat::WHITE;
+		}
+	}
+
+	/**
+	 * @param string[] $args
+	 */
+	private function permissionListCommand(CommandSender $sender, array $args) : bool{
+		$target = $sender;
+		if(isset($args[0])){
+			if(($player = $this->getServer()->getPlayerByPrefix($args[0])) instanceof Player){
+				$target = $player;
+			}else{
+				return false;
+			}
+		}
+
+		if($target !== $sender and !$sender->hasPermission("devtools.command.listperms.other")){
+			$sender->sendMessage(TextFormat::RED . "You do not have permissions to check other players.");
+			return true;
+		}else{
+			$sender->sendMessage(TextFormat::GOLD . "--- Permissions assigned to " . TextFormat::YELLOW . $target->getName() . TextFormat::GOLD . " ---");
+			foreach($target->getEffectivePermissions() as $permissionAttachmentInfo){
+				$sender->sendMessage("- " . $this->describePermission($permissionAttachmentInfo));
+			}
+			return true;
+		}
+	}
 
 	private function makePluginLoader(CommandSender $sender) : bool{
 		if(ini_get('phar.readonly') !== '0'){
@@ -191,6 +270,9 @@ class DevTools extends PluginBase{
 		return true;
 	}
 
+	/**
+	 * @param string[] $args
+	 */
 	private function makePluginCommand(CommandSender $sender, array $args) : bool{
 		if(ini_get('phar.readonly') !== '0'){
 			$sender->sendMessage(TextFormat::RED . "This command requires \"phar.readonly\" to be set to 0. Set it in " . php_ini_loaded_file() . " and restart the server.");
@@ -210,12 +292,6 @@ class DevTools extends PluginBase{
 
 		$pharPath = $this->getDataFolder() . $description->getName() . "_v" . $description->getVersion() . ".phar";
 
-		if($description->getName() === "DevTools"){
-			$stub = sprintf(DEVTOOLS_REQUIRE_FILE_STUB, "src/DevTools/ConsoleScript.php");
-		}else{
-			$stub = sprintf(DEVTOOLS_PLUGIN_STUB, $description->getName(), $description->getVersion(), $this->getDescription()->getVersion(), date("r"));
-		}
-
 		$reflection = new \ReflectionClass(PluginBase::class);
 		$file = $reflection->getProperty("file");
 		$file->setAccessible(true);
@@ -230,12 +306,27 @@ class DevTools extends PluginBase{
 		$metadata = generatePluginMetadataFromYml($filePath . "plugin.yml");
 		assert($metadata !== null);
 
+		if($description->getName() === "DevTools"){
+			$stub = sprintf(DEVTOOLS_REQUIRE_FILE_STUB, "src/DevTools/ConsoleScript.php");
+		}else{
+			$stubMetadata = [];
+			foreach($metadata as $key => $value){
+				$stubMetadata[] = addslashes(ucfirst($key) . ": " . (is_array($value) ? implode(", ", $value) : $value));
+			}
+			$stub = sprintf(DEVTOOLS_PLUGIN_STUB, $description->getName(), $description->getVersion(), $this->getDescription()->getVersion(), date("r"), implode("\n", $stubMetadata));
+		}
+
 		$this->buildPhar($sender, $pharPath, $filePath, [], $metadata, $stub, \Phar::SHA1);
 
 		$sender->sendMessage("Phar plugin " . $description->getName() . " v" . $description->getVersion() . " has been created on " . $pharPath);
 		return true;
 	}
 
+	/**
+	 * @param string[] $includedPaths
+	 * @param mixed[] $metadata
+	 * @phpstan-param array<string, mixed> $metadata
+	 */
 	private function buildPhar(CommandSender $sender, string $pharPath, string $basePath, array $includedPaths, array $metadata, string $stub, int $signatureAlgo = \Phar::SHA1) : void{
 		foreach(buildPhar($pharPath, $basePath, $includedPaths, $metadata, $stub, $signatureAlgo, \Phar::GZ) as $line){
 			$sender->sendMessage("[DevTools] $line");
