@@ -1,0 +1,40 @@
+# Workflow copied from pmmp/ExamplePlugin@bfc359934c88c0b105aeb1b4d21c51076443d2a9
+
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: PHPStan analysis
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php:
+          - "8.0"
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@2.15.0
+        with:
+          php-version: ${{ matrix.php }}
+
+      - name: Restore Composer package cache
+        id: composer-cache
+        uses: actions/cache@v2
+        with:
+          path: "~/.cache/composer"
+          key: "php-${{ matrix.php }}-composer-${{ hashFiles('**/composer.json') }}"
+          restore-keys: "php-${{ matrix.php }}-composer-"
+
+      - name: Install PHPStan Composer dependencies
+        run: COMPOSER=phpstan-composer.json composer install --prefer-dist --no-interaction --ignore-platform-reqs
+
+      - name: Run PHPStan
+        run: vendor/bin/phpstan analyze
