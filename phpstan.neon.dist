@@ -3,4 +3,4 @@ parameters:
 	paths:
 		- src
 	scanFiles:
-		- src/DevTools/ConsoleScript.php
+		- src/ConsoleScript.php

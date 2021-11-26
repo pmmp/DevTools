@@ -1,3 +1,3 @@
 <?php
 
-require("src/DevTools/ConsoleScript.php");
+require("src/ConsoleScript.php");

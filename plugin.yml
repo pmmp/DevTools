@@ -1,5 +1,6 @@
 name: DevTools
 main: DevTools\DevTools
+src-namespace-prefix: DevTools
 version: 1.15.0+dev
 api: [4.0.0]
 load: STARTUP

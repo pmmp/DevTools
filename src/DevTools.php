@@ -252,7 +252,7 @@ class DevTools extends PluginBase{
 		assert($metadata !== null);
 
 		if($description->getName() === "DevTools"){
-			$stub = sprintf(DEVTOOLS_REQUIRE_FILE_STUB, "src/DevTools/ConsoleScript.php");
+			$stub = sprintf(DEVTOOLS_REQUIRE_FILE_STUB, "src/ConsoleScript.php");
 		}else{
 			$stubMetadata = [];
 			foreach($metadata as $key => $value){
