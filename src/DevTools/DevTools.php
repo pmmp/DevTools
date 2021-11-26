@@ -31,24 +31,20 @@ use pocketmine\permission\PermissionManager;
 use pocketmine\player\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginBase;
-use pocketmine\plugin\PluginEnableOrder;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use function assert;
 use function buildPhar;
 use function count;
 use function date;
-use function file_exists;
 use function generatePluginMetadataFromYml;
 use function implode;
 use function ini_get;
-use function mkdir;
 use function php_ini_loaded_file;
 use function realpath;
 use function rtrim;
 use function sprintf;
 use function strtolower;
-use function time;
 use function trim;
 use const DEVTOOLS_PLUGIN_STUB;
 use const DEVTOOLS_REQUIRE_FILE_STUB;
@@ -69,9 +65,7 @@ class DevTools extends PluginBase{
 	public function onCommand(CommandSender $sender, Command $command, string $label, array $args) : bool{
 		switch($command->getName()){
 			case "makeplugin":
-				if(isset($args[0]) and $args[0] === "FolderPluginLoader"){
-					return $this->makePluginLoader($sender);
-				}elseif(isset($args[0]) and $args[0] === "*"){
+				if(isset($args[0]) and $args[0] === "*"){
 					$plugins = $this->getServer()->getPluginManager()->getPlugins();
 					$succeeded = $failed = [];
 					$skipped = 0;
@@ -94,11 +88,10 @@ class DevTools extends PluginBase{
 						$sender->sendMessage(TextFormat::GREEN . count($succeeded) . "/" . (count($plugins) - $skipped) . " plugin"
 							. ((count($plugins) - $skipped) === 1 ? "" : "s") . " successfully built: " . implode(", ", $succeeded));
 					}
-					return true;
 				}else{
 					$this->makePluginCommand($sender, $args);
-					return true;
 				}
+				return true;
 			case "checkperm":
 				return $this->permissionCheckCommand($sender, $args);
 			case "listperms":
@@ -221,47 +214,6 @@ class DevTools extends PluginBase{
 			}
 			return true;
 		}
-	}
-
-	private function makePluginLoader(CommandSender $sender) : bool{
-		if(ini_get('phar.readonly') !== '0'){
-			$sender->sendMessage(TextFormat::RED . "This command requires \"phar.readonly\" to be set to 0. Set it in " . php_ini_loaded_file() . " and restart the server.");
-			return true;
-		}
-		$pharPath = $this->getDataFolder() . "FolderPluginLoader.phar";
-		if(file_exists($pharPath)){
-			$sender->sendMessage("Phar plugin already exists, overwriting...");
-			\Phar::unlinkArchive($pharPath);
-		}
-		$phar = new \Phar($pharPath);
-		$phar->setMetadata([
-			"name" => "FolderPluginLoader",
-			"version" => "1.0.1",
-			"main" => "FolderPluginLoader\\Main",
-			"api" => ["1.0.0", "2.0.0"],
-			"depend" => [],
-			"description" => "Loader of folder plugins",
-			"authors" => ["PocketMine Team"],
-			"website" => "https://github.com/PocketMine/DevTools",
-			"creationDate" => time()
-		]);
-		$phar->setStub('<?php __HALT_COMPILER();');
-		$phar->setSignatureAlgorithm(\Phar::SHA1);
-		$phar->startBuffering();
-
-		$phar->addFromString("plugin.yml", "name: FolderPluginLoader\nversion: 1.0.1\nmain: FolderPluginLoader\\Main\napi: [1.0.0, 2.0.0]\nload: STARTUP\n");
-		$phar->addFile($this->getFile() . "src/FolderPluginLoader/FolderPluginLoader.php", "src/FolderPluginLoader/FolderPluginLoader.php");
-		$phar->addFile($this->getFile() . "src/FolderPluginLoader/Main.php", "src/FolderPluginLoader/Main.php");
-
-		foreach($phar as $file => $finfo){
-			/** @var \PharFileInfo $finfo */
-			if($finfo->getSize() > (1024 * 512)){
-				$finfo->compress(\Phar::GZ);
-			}
-		}
-		$phar->stopBuffering();
-		$sender->sendMessage("Folder plugin loader has been created on " . $pharPath);
-		return true;
 	}
 
 	/**
