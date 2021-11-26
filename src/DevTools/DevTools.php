@@ -21,7 +21,6 @@ namespace DevTools;
 
 use DevTools\commands\ExtractPluginCommand;
 use DevTools\commands\GeneratePluginCommand;
-use FolderPluginLoader\FolderPluginLoader;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\permission\Permissible;

@@ -17,7 +17,7 @@
 
 declare(strict_types=1);
 
-namespace FolderPluginLoader;
+namespace DevTools;
 
 use pocketmine\plugin\PluginDescription;
 use pocketmine\plugin\PluginLoader;
