@@ -1,4 +1,4 @@
-# Development Tools <em>for PocketMine-MP</em>
+# Development Tools for PocketMine-MP
 DevTools is a collection of utilities used for developing PocketMine-MP plugins.
 
 ## Features
