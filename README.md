@@ -30,8 +30,7 @@ The script currently takes the following arguments:
 |:--------:|:--------:|:------------|
 | `--make` | yes | The path to the files you want to bundle into a phar |
 | `--relative` | no | Relative path to use when building the phar. This usually isn't necessary for plugins. Used to build PocketMine-MP phars with the `src` directory without including the files in the repository root. |
-| `--entry` | no | PHP file within the phar to execute when running the phar from the command-line. Usually not needed for plugins, but required for a PocketMine-MP phar. Used to generate phar stubs. |
-| `--stub` | no | (Optional) PHP file to use as a custom phar stub. The stub will be executed when the phar is run from the command line. |
+| `--stub` | no | PHP file to use as a custom phar stub. The stub will be executed when the phar is run from the command line. |
 | `--out` | yes | Path and filename of the output phar file. |
 
 Example command line for building a plugin:
