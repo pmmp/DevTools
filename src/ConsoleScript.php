@@ -159,45 +159,36 @@ function main() : void{
 		exit(1);
 	}
 
-	$includedPaths = explode(",", $opts["make"]);
-	array_walk($includedPaths, function(&$path, $key) : void{
-		$realPath = realpath($path);
-		if($realPath === false){
-			echo "[ERROR] make directory `$path` does not exist or permission denied" . PHP_EOL;
-			exit(1);
-		}
-
-		//Convert to absolute path for base path detection
-		if(is_dir($realPath)){
-			$path = rtrim($realPath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
-		}
-	});
-
 	if(!isset($opts["relative"])){
-		if(count($includedPaths) > 1){
-			echo "You must specify a relative path with --relative <path> to be able to include multiple directories" . PHP_EOL;
-			exit(1);
-		}
-
-		$basePath = rtrim(realpath(array_shift($includedPaths)), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+		$basePath = rtrim(realpath(getcwd()), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
 	}else{
 		$basePath = rtrim(realpath($opts["relative"]), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
 	}
+	if(!is_dir($basePath)){
+		echo "Base path " . $basePath . " is not a folder" . PHP_EOL;
+		exit(1);
+	}
 
-	//Convert included paths back to relative after we decide what the base path is
-	$includedPaths = array_filter(array_map(function(string $path) use ($basePath) : string{
-		return str_replace($basePath, '', $path);
-	}, $includedPaths), function(string $v) : bool{
+	$includedPaths = explode(",", $opts["make"]);
+	array_walk($includedPaths, function(&$path, $key) use ($basePath) : void{
+		$realPath = realpath($basePath . $path);
+		if($realPath === false){
+			echo "Make path ${basePath}${path} does not exist or permission denied" . PHP_EOL;
+			exit(1);
+		}
+
+		$path = str_replace($basePath, '', $realPath);
+		if(is_dir($realPath)){
+			$path = rtrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+		}
+	});
+
+	$includedPaths = array_filter($includedPaths, function(string $v) : bool{
 		return $v !== '';
 	});
 
 	$pharName = $opts["out"] ?? "output.phar";
 	$stubPath = $opts["stub"] ?? "stub.php";
-
-	if(!is_dir($basePath)){
-		echo $basePath . " is not a folder" . PHP_EOL;
-		return;
-	}
 
 	echo PHP_EOL;
 
@@ -207,9 +198,10 @@ function main() : void{
 		echo "Using stub " . $basePath . $stubPath . PHP_EOL;
 		$stub = sprintf(DEVTOOLS_REQUIRE_FILE_STUB, $stubPath);
 	}elseif(isset($opts["entry"])){
-		$realEntry = realpath($opts["entry"]);
+		$realEntry = realpath($basePath . $opts["entry"]);
 		if($realEntry === false){
-			die("Entry point not found");
+			echo "Entry point " . $basePath . $opts["entry"] . " not found\n";
+			exit(1);
 		}
 
 		$realEntry = addslashes(str_replace([$basePath, "\\"], ["", "/"], $realEntry));
