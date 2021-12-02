@@ -145,12 +145,12 @@ function generatePluginMetadataFromYml(string $pluginYmlPath) : ?array{
 }
 
 function main() : void{
-	$opts = getopt("", ["make:", "relative:", "out:", "entry:", "compress", "stub:"]);
+	$opts = getopt("", ["make:", "relative:", "out:", "compress", "stub:"]);
 	global $argv;
 
 	if(!isset($opts["make"])){
 		echo "== PocketMine-MP DevTools CLI interface ==" . PHP_EOL . PHP_EOL;
-		echo "Usage: " . PHP_BINARY . " -dphar.readonly=0 " . $argv[0] . " --make <sourceFolder1[,sourceFolder2[,sourceFolder3...]]> --relative <relativePath> --entry \"relativeSourcePath.php\" --out <pharName.phar>" . PHP_EOL;
+		echo "Usage: " . PHP_BINARY . " -dphar.readonly=0 " . $argv[0] . " --make <sourceFolder1[,sourceFolder2[,sourceFolder3...]]> --relative <relativePath> --stub \"relativeStubPath.php\" --out <pharName.phar>" . PHP_EOL;
 		exit(0);
 	}
 
@@ -194,24 +194,19 @@ function main() : void{
 
 	$metadata = [];
 
-	if(file_exists($basePath . $stubPath)){
-		echo "Using stub " . $basePath . $stubPath . PHP_EOL;
-		$stub = sprintf(DEVTOOLS_REQUIRE_FILE_STUB, $stubPath);
-	}elseif(isset($opts["entry"])){
-		$realEntry = realpath($basePath . $opts["entry"]);
-		if($realEntry === false){
-			echo "Entry point " . $basePath . $opts["entry"] . " not found\n";
+	if(file_exists($basePath . $stubPath) || isset($opts["stub"])){
+		$realStubPath = realpath($basePath . $stubPath);
+		if($realStubPath === false){
+			echo "Stub path " . $basePath . $stubPath . " not found\n";
 			exit(1);
 		}
-
-		$realEntry = addslashes(str_replace([$basePath, "\\"], ["", "/"], $realEntry));
-		echo "Setting entry point to " . $realEntry . PHP_EOL;
-
-		$stub = sprintf(DEVTOOLS_REQUIRE_FILE_STUB, $realEntry);
+		echo "Using stub " . $realStubPath . PHP_EOL;
+		$resolvedStubPath = str_replace([$basePath, DIRECTORY_SEPARATOR], ["", "/"], $realStubPath);
+		$stub = sprintf(DEVTOOLS_REQUIRE_FILE_STUB, $resolvedStubPath);
 	}else{
 		$metadata = generatePluginMetadataFromYml($basePath . "plugin.yml");
 		if($metadata === null){
-			echo "Missing entry point or plugin.yml" . PHP_EOL;
+			echo "Missing stub or plugin.yml" . PHP_EOL;
 			exit(1);
 		}
 
