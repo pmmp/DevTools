@@ -9,6 +9,7 @@ DevTools is a collection of utilities used for developing PocketMine-MP plugins.
 
 ## Commands
 * _/genplugin <pluginName> <authorName>_: Generates skeleton files for a new plugin
+* _/extractplugin \<pluginName\>_: Extracts the source of a loaded plugin from its Phar file
 * _/makeplugin \<pluginName\>_: Creates a Phar plugin archive for its distribution
 * _/makeplugin *_: Creates Phar plugin archives for all loaded plugins
 * _/checkperm \<node\> [playerName]_: Checks a permission node
