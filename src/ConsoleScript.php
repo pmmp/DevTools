@@ -177,10 +177,10 @@ function main() : void{
 			exit(1);
 		}
 
-		$path = str_replace($basePath, '', $realPath);
 		if(is_dir($realPath)){
-			$path = rtrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+			$realPath = rtrim($realPath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
 		}
+		$path = str_replace($basePath, '', $realPath);
 	});
 
 	$includedPaths = array_filter($includedPaths, function(string $v) : bool{
