@@ -10,5 +10,10 @@
       "psr-4": {
          "DevTools\\": "./src"
       }
+   },
+   "config": {
+      "allow-plugins": {
+         "phpstan/extension-installer": true
+      }
    }
 }
