@@ -301,7 +301,7 @@ class DevTools extends PluginBase{
 	private function describeHandlerList(CommandSender $sender, HandlerList $handlerList, string $className) : bool{
 		$found = false;
 		foreach(EventPriority::ALL as $priority){
-			$priorityName = self::EVENT_PRIORITY_NAMES[$priority] ?? throw new AssumptionFailedError("Unknown priority $priority");
+			$priorityName = self::EVENT_PRIORITY_NAMES[$priority];
 			for($currentList = $handlerList; $currentList !== null; $currentList = $currentList->getParent()){
 				$handlers = $handlerList->getListenersByPriority($priority);
 				if(count($handlers) === 0){
@@ -332,6 +332,9 @@ class DevTools extends PluginBase{
 		return $found;
 	}
 
+	/**
+	 * @param string[] $args
+	 */
 	private function handlerListCommand(CommandSender $sender, array $args) : bool{
 		if(count($args) === 0){
 			$all = HandlerListManager::global()->getAll();
@@ -355,6 +358,9 @@ class DevTools extends PluginBase{
 		return true;
 	}
 
+	/**
+	 * @param string[] $args
+	 */
 	private function handlerListByPluginCommand(CommandSender $sender, array $args) : bool{
 		if(count($args) !== 1){
 			return false;
@@ -369,7 +375,7 @@ class DevTools extends PluginBase{
 		$sender->sendMessage("--- Event handlers registered by plugin " . TextFormat::GREEN . $plugin->getName() . TextFormat::WHITE . " ---");
 		foreach(HandlerListManager::global()->getAll() as $className => $handlerList){
 			foreach(EventPriority::ALL as $priority){
-				$priorityName = self::EVENT_PRIORITY_NAMES[$priority] ?? throw new AssumptionFailedError("Unknown priority $priority");
+				$priorityName = self::EVENT_PRIORITY_NAMES[$priority];
 
 				for($currentList = $handlerList; $currentList !== null; $currentList = $currentList->getParent()){
 					$handlers = $handlerList->getListenersByPriority($priority);
