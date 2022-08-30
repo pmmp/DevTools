@@ -23,6 +23,11 @@ use DevTools\commands\ExtractPluginCommand;
 use DevTools\commands\GeneratePluginCommand;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
+use pocketmine\entity\effect\StringToEffectParser;
+use pocketmine\event\EventPriority;
+use pocketmine\event\HandlerList;
+use pocketmine\event\HandlerListManager;
+use pocketmine\event\RegisteredListener;
 use pocketmine\permission\Permissible;
 use pocketmine\permission\Permission;
 use pocketmine\permission\PermissionAttachmentInfo;
@@ -31,7 +36,9 @@ use pocketmine\player\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginBase;
 use pocketmine\Server;
+use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat;
+use pocketmine\utils\Utils;
 use function assert;
 use function buildPhar;
 use function count;
@@ -39,6 +46,7 @@ use function date;
 use function generatePluginMetadataFromYml;
 use function implode;
 use function ini_get;
+use function ksort;
 use function php_ini_loaded_file;
 use function realpath;
 use function rtrim;
@@ -48,8 +56,18 @@ use function trim;
 use const DEVTOOLS_PLUGIN_STUB;
 use const DEVTOOLS_REQUIRE_FILE_STUB;
 use const DIRECTORY_SEPARATOR;
+use const SORT_STRING;
 
 class DevTools extends PluginBase{
+
+	private const EVENT_PRIORITY_NAMES = [
+		EventPriority::LOWEST => "LOWEST",
+		EventPriority::LOW => "LOW",
+		EventPriority::NORMAL => "NORMAL",
+		EventPriority::HIGH => "HIGH",
+		EventPriority::HIGHEST => "HIGHEST",
+		EventPriority::MONITOR => "MONITOR",
+	];
 
 	public function onLoad() : void{
 		require_once __DIR__ . "/ConsoleScript.php";
@@ -95,6 +113,10 @@ class DevTools extends PluginBase{
 				return $this->permissionCheckCommand($sender, $args);
 			case "listperms":
 				return $this->permissionListCommand($sender, $args);
+			case "handlers":
+				return $this->handlerListCommand($sender, $args);
+			case "handlersbyplugin":
+				return $this->handlerListByPluginCommand($sender, $args);
 			default:
 				return false;
 		}
@@ -276,5 +298,108 @@ class DevTools extends PluginBase{
 		foreach(buildPhar($pharPath, $basePath, $includedPaths, $metadata, $stub, $signatureAlgo, \Phar::GZ) as $line){
 			$sender->sendMessage("[DevTools] $line");
 		}
+	}
+
+	private function describeHandlerList(CommandSender $sender, HandlerList $handlerList, string $className) : bool{
+		$found = false;
+		foreach(EventPriority::ALL as $priority){
+			$priorityName = self::EVENT_PRIORITY_NAMES[$priority] ?? throw new AssumptionFailedError("Unknown priority $priority");
+			for($currentList = $handlerList; $currentList !== null; $currentList = $currentList->getParent()){
+				$handlers = $handlerList->getListenersByPriority($priority);
+				if(count($handlers) === 0){
+					continue;
+				}
+
+				if(!$found){
+					$found = true;
+					$sender->sendMessage("--- Handlers called by " . TextFormat::GREEN . $className . TextFormat::WHITE . " ---");
+				}
+
+				foreach($handlers as $handler){
+					$sender->sendMessage(
+						"- " .
+						TextFormat::DARK_GREEN . Utils::getNiceClosureName($handler->getHandler()) . TextFormat::RESET .
+						" in plugin " .
+						TextFormat::DARK_GREEN . $handler->getPlugin()->getName() . TextFormat::RESET .
+						" at priority " .
+						TextFormat::DARK_GREEN . $priorityName . TextFormat::RESET .
+						" (handles cancelled events: " .
+						TextFormat::DARK_GREEN . ($handler->isHandlingCancelled() ? "yes" : "no") . TextFormat::RESET .
+						")"
+					);
+				}
+			}
+		}
+
+		return $found;
+	}
+
+	private function handlerListCommand(CommandSender $sender, array $args) : bool{
+		if(count($args) === 0){
+			$all = HandlerListManager::global()->getAll();
+			ksort($all, SORT_STRING);
+			foreach($all as $className => $handlerList){
+				$this->describeHandlerList($sender, $handlerList, $className);
+			}
+			return true;
+		}elseif(count($args) > 1){
+			return false;
+		}
+
+		//getListFor() will throw if the class is not valid, but the validation conditions aren't exposed to the API,
+		//so this is the best way to handle missing classes.
+		$handlerList = HandlerListManager::global()->getAll()[$args[0]] ?? null;
+		if($handlerList === null || !$this->describeHandlerList($sender, $handlerList, $args[0])){
+			$sender->sendMessage(TextFormat::RED . "No event handlers found for class " . $args[0]);
+			return true;
+		}
+
+		return true;
+	}
+
+	private function handlerListByPluginCommand(CommandSender $sender, array $args) : bool{
+		if(count($args) !== 1){
+			return false;
+		}
+
+		$plugin = Server::getInstance()->getPluginManager()->getPlugin($args[0]);
+		if($plugin === null){
+			$sender->sendMessage(TextFormat::RED . "No plugin found with name " . $args[0]);
+			return true;
+		}
+
+		$sender->sendMessage("--- Event handlers registered by plugin " . TextFormat::GREEN . $plugin->getName() . TextFormat::WHITE . " ---");
+		foreach(HandlerListManager::global()->getAll() as $className => $handlerList){
+			foreach(EventPriority::ALL as $priority){
+				$priorityName = self::EVENT_PRIORITY_NAMES[$priority] ?? throw new AssumptionFailedError("Unknown priority $priority");
+
+				for($currentList = $handlerList; $currentList !== null; $currentList = $currentList->getParent()){
+					$handlers = $handlerList->getListenersByPriority($priority);
+					if(count($handlers) === 0){
+						continue;
+					}
+
+					foreach($handlers as $handler){
+						if($handler->getPlugin() !== $plugin){
+							continue;
+						}
+
+						$sender->sendMessage(
+							"- " .
+							TextFormat::DARK_GREEN . Utils::getNiceClosureName($handler->getHandler()) . TextFormat::RESET .
+							" handles event " .
+							TextFormat::DARK_GREEN . $className . TextFormat::RESET .
+							" at priority " .
+							TextFormat::DARK_GREEN . $priorityName . TextFormat::RESET .
+							" (handles cancelled events: " .
+							TextFormat::DARK_GREEN . ($handler->isHandlingCancelled() ? "yes" : "no") . TextFormat::RESET .
+							")"
+						);
+					}
+				}
+			}
+		}
+
+		return true;
 	}
 }
