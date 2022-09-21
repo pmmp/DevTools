@@ -49,6 +49,7 @@ use function php_ini_loaded_file;
 use function realpath;
 use function rtrim;
 use function sprintf;
+use function str_contains;
 use function strtolower;
 use function trim;
 use const DEVTOOLS_PLUGIN_STUB;
@@ -336,25 +337,21 @@ class DevTools extends PluginBase{
 	 * @param string[] $args
 	 */
 	private function handlerListCommand(CommandSender $sender, array $args) : bool{
-		if(count($args) === 0){
-			$all = HandlerListManager::global()->getAll();
-			ksort($all, SORT_STRING);
-			foreach($all as $className => $handlerList){
-				$this->describeHandlerList($sender, $handlerList, $className);
-			}
-			return true;
-		}elseif(count($args) > 1){
+		if(count($args) > 1){
 			return false;
 		}
-
-		//getListFor() will throw if the class is not valid, but the validation conditions aren't exposed to the API,
-		//so this is the best way to handle missing classes.
-		$handlerList = HandlerListManager::global()->getAll()[$args[0]] ?? null;
-		if($handlerList === null || !$this->describeHandlerList($sender, $handlerList, $args[0])){
-			$sender->sendMessage(TextFormat::RED . "No event handlers found for class " . $args[0]);
-			return true;
+		$all = HandlerListManager::global()->getAll();
+		ksort($all, SORT_STRING);
+		$found = false;
+		foreach($all as $className => $handlerList){
+			if(count($args) === 0 || str_contains($className, $args[0])){
+				$found = true;
+				$this->describeHandlerList($sender, $handlerList, $className);
+			}
 		}
-
+		if(!$found){
+			$sender->sendMessage(TextFormat::RED . "No event handlers found for any classes containing \"" . $args[0] . "\"");
+		}
 		return true;
 	}
 
