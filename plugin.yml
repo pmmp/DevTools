@@ -20,6 +20,14 @@ commands:
   description: Lists all the permission nodes set on the executor, or a player
   usage: "/listperms [playerName]"
   permission: "devtools.command.listperms.self;devtools.command.listperms.other"
+ handlers:
+  description: Lists all event handlers currently associated with an event
+  usage: "/handlers <event>"
+  permission: devtools.command.handlers
+ handlersbyplugin:
+  description: Lists all event handlers registered by a given plugin
+  usage: "/handlersbyplugin <pluginName>"
+  permission: devtools.command.handlersbyplugin
 permissions:
  devtools.command.makeplugin:
   default: op
@@ -42,4 +50,9 @@ permissions:
  devtools.command.listperms.other:
   default: op
   description: "Allows the user to list another player's permissions"
-
+ devtools.command.handlers:
+  default: op
+  description: "Allows the user to list handlers associated with an event"
+ devtools.command.handlersbyplugin:
+  default: op
+  description: "Allows the user to list event handlers registered by a given plugin"
