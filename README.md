@@ -14,6 +14,8 @@ DevTools is a collection of utilities used for developing PocketMine-MP plugins.
 * `/makeplugin *`: Creates Phar plugin archives for all loaded plugins
 * `/checkperm <node> [playerName]`: Checks a permission node
 * `/listperms [playerName]`: Lists permissions assigned to the command sender, or the target player
+* `/handlers [partialEventName]`: Lists event handlers registered to event classes matching the input
+* `/handlersbyplugin <pluginName>`: Lists event handlers registered by the given plugin
 
 ## Using ConsoleScript to build a DevTools phar from source code
 Contrary to popular belief, this is very simple. Assuming you have a php executable in your PATH variable, cd into the DevTools directory (the folder where plugin.yml is located) and simply run the following:
