@@ -22,6 +22,10 @@ Contrary to popular belief, this is very simple. Assuming you have a php executa
 ```
 php -dphar.readonly=0 path/to/ConsoleScript.php --make path/to/DevTools --relative path/to/DevTools --out path/to/put/devtools/phar/in/DevTools.phar
 ```
+for Windos:
+```
+php -dphar.readonly=0 src/ConsoleScript.php --make "" --relative "" --out DevTools.phar
+```
 You can then load the phar onto a PocketMine-MP server. A correctly-built DevTools phar can also be executed directly from the command line as if it was the ConsoleScript.
 
 ## Build plugin phars from the command line
