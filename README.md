@@ -22,7 +22,7 @@ Contrary to popular belief, this is very simple. Assuming you have a php executa
 ```
 php -dphar.readonly=0 path/to/ConsoleScript.php --make path/to/DevTools --relative path/to/DevTools --out path/to/put/devtools/phar/in/DevTools.phar
 ```
-for Windos:
+for Windows:
 ```
 php -dphar.readonly=0 src/ConsoleScript.php --make "" --relative "" --out DevTools.phar
 ```
