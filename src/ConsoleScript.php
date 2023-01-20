@@ -173,7 +173,7 @@ function main() : void{
 	array_walk($includedPaths, function(&$path, $key) use ($basePath) : void{
 		$realPath = realpath($basePath . $path);
 		if($realPath === false){
-			echo "Make path ${basePath}${path} does not exist or permission denied" . PHP_EOL;
+			echo "Make path $basePath$path does not exist or permission denied" . PHP_EOL;
 			exit(1);
 		}
 
