@@ -1,5 +1,6 @@
 .idea/
 *.phar
-/vendor
-/phpstan-composer.lock
-/phpstan.neon
+/vendor/
+/phpstan/vendor
+/phpstan/composer.lock
+/phpstan/phpstan.neon
