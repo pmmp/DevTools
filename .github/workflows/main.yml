@@ -15,14 +15,14 @@ jobs:
       fail-fast: false
       matrix:
         php:
-          - "8.1.19"
-          - "8.2.6"
+          - "8.1"
+          - "8.2"
 
     steps:
       - uses: actions/checkout@v3
 
       - name: Setup PHP
-        uses: pmmp/setup-php-action@1.0.0
+        uses: pmmp/setup-php-action@2.0.0
         with:
           php-version: ${{ matrix.php }}
           install-path: "./bin"
@@ -36,7 +36,7 @@ jobs:
           restore-keys: "php-${{ matrix.php }}-composer-"
 
       - name: Install PHPStan Composer dependencies
-        run: COMPOSER=phpstan-composer.json composer install --prefer-dist --no-interaction --ignore-platform-reqs
+        run: COMPOSER=phpstan-composer.json composer install --prefer-dist --no-interaction
 
       - name: Run PHPStan
         run: vendor/bin/phpstan analyze
