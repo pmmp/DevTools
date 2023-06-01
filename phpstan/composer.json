@@ -2,10 +2,12 @@
    "name": "pocketmine/phpstan-plugin-config",
    "require": {
       "phpstan/phpstan": "^1.10.0",
-      "pocketmine/pocketmine-mp": "4.0.0",
+      "netresearch/jsonmapper": "dev-array-in-string-property-error as 4.2.0",
+      "pocketmine/pocketmine-mp": "dev-major-next",
       "phpstan/phpstan-strict-rules": "^1.0.0",
       "phpstan/extension-installer": "^1.0"
    },
+   "minimum-stability": "dev",
    "autoload": {
       "psr-4": {
          "DevTools\\": "../src"
@@ -15,5 +17,11 @@
       "allow-plugins": {
          "phpstan/extension-installer": true
       }
-   }
+   },
+   "repositories": [
+      {
+         "type": "vcs",
+         "url": "https://github.com/dktapps/JsonMapper.git"
+      }
+   ]
 }

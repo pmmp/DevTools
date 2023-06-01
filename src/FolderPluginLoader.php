@@ -21,18 +21,15 @@ namespace DevTools;
 
 use pocketmine\plugin\PluginDescription;
 use pocketmine\plugin\PluginLoader;
+use pocketmine\thread\ThreadSafeClassLoader;
 use function file_exists;
 use function file_get_contents;
 use function is_dir;
 
 class FolderPluginLoader implements PluginLoader{
-
-	/** @var \DynamicClassLoader */
-	private $loader;
-
-	public function __construct(\DynamicClassLoader $loader){
-		$this->loader = $loader;
-	}
+	public function __construct(
+		private readonly ThreadSafeClassLoader $loader
+	){}
 
 	public function canLoadPlugin(string $path) : bool{
 		return is_dir($path) and file_exists($path . "/plugin.yml") and file_exists($path . "/src/");
