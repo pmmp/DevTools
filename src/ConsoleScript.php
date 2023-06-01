@@ -17,7 +17,7 @@ declare(strict_types=1);
  * GNU General Public License for more details.
 */
 
-const DEVTOOLS_VERSION = "1.16.2+dev";
+const DEVTOOLS_VERSION = "1.17.0";
 
 const DEVTOOLS_REQUIRE_FILE_STUB = '<?php require("phar://" . __FILE__ . "/%s"); __HALT_COMPILER();';
 const DEVTOOLS_PLUGIN_STUB = '
