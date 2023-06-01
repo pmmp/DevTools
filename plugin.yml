@@ -1,7 +1,7 @@
 name: DevTools
 main: DevTools\DevTools
 src-namespace-prefix: DevTools
-version: 1.17.0
+version: 1.17.1+dev
 api: [5.0.0]
 load: STARTUP
 author: PocketMine Team
