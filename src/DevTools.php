@@ -26,6 +26,7 @@ use pocketmine\command\CommandSender;
 use pocketmine\event\EventPriority;
 use pocketmine\event\HandlerList;
 use pocketmine\event\HandlerListManager;
+use pocketmine\lang\Translatable;
 use pocketmine\permission\Permissible;
 use pocketmine\permission\Permission;
 use pocketmine\permission\PermissionAttachmentInfo;
@@ -145,16 +146,18 @@ class DevTools extends PluginBase{
 			$sender->sendMessage(TextFormat::GREEN . "---- " . TextFormat::WHITE . "Permission node " . $node . TextFormat::GREEN . " ----");
 			$perm = PermissionManager::getInstance()->getPermission($node);
 			if($perm instanceof Permission){
-				$desc = TextFormat::GOLD . "Description: " . TextFormat::WHITE . $perm->getDescription() . "\n";
+				$description = $perm->getDescription();
+				$rawDescription = $description instanceof Translatable ? $sender->getLanguage()->translate($description) : $description;
+				$message = TextFormat::GOLD . "Description: " . TextFormat::WHITE . $rawDescription . "\n";
 				$children = [];
 				foreach($perm->getChildren() as $name => $isGranted){
 					$children[] = ($isGranted ? TextFormat::GREEN : TextFormat::RED) . $name . TextFormat::WHITE;
 				}
-				$desc .= TextFormat::GOLD . "Children: " . TextFormat::WHITE . implode(", ", $children) . "\n";
+				$message .= TextFormat::GOLD . "Children: " . TextFormat::WHITE . implode(", ", $children) . "\n";
 			}else{
-				$desc = TextFormat::RED . "Permission does not exist\n";
+				$message = TextFormat::RED . "Permission does not exist\n";
 			}
-			$sender->sendMessage($desc);
+			$sender->sendMessage($message);
 			$coloredName = TextFormat::YELLOW . $target->getName() . TextFormat::RESET;
 			$sender->sendMessage(TextFormat::GOLD . "Permission info for $coloredName:");
 			foreach($this->describePermissionSet($target, $node) as $line){

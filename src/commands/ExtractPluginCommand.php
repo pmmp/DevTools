@@ -21,6 +21,7 @@ namespace DevTools\commands;
 
 use DevTools\DevTools;
 use pocketmine\command\CommandSender;
+use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\plugin\PharPluginLoader;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginBase;
@@ -52,13 +53,8 @@ class ExtractPluginCommand extends DevToolsCommand{
 			return false;
 		}
 
-		if(!$this->testPermission($sender)){
-			return false;
-		}
-
 		if(count($args) === 0){
-			$sender->sendMessage(TextFormat::RED . "Usage: " . $this->usageMessage);
-			return true;
+			throw new InvalidCommandSyntaxException();
 		}
 
 		$pluginName = trim(implode(" ", $args));

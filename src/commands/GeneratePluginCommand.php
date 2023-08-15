@@ -21,6 +21,7 @@ namespace DevTools\commands;
 
 use DevTools\DevTools;
 use pocketmine\command\CommandSender;
+use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\utils\TextFormat;
 use function count;
 use function ctype_digit;
@@ -48,13 +49,8 @@ class GeneratePluginCommand extends DevToolsCommand{
 			return false;
 		}
 
-		if(!$this->testPermission($sender)){
-			return false;
-		}
-
 		if(count($args) < 2){
-			$sender->sendMessage(TextFormat::RED . "Usage: " . $this->usageMessage);
-			return true;
+			throw new InvalidCommandSyntaxException();
 		}
 
 		list($pluginName, $author) = $args;
