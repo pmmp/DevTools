@@ -105,10 +105,13 @@ function buildPhar(string $pharPath, string $basePath, array $includedPaths, arr
 
 	$count = count($phar->buildFromIterator($regexIterator, $basePath));
 	yield "Added $count files";
+	$phar->stopBuffering();
 
 	if($compression !== null){
 		yield "Checking for compressible files...";
-		foreach($phar as $file => $finfo){
+		//foreach doesn't work properly when buildFromIterator was used, so we have to recreate the object
+		$phar = new \Phar($pharPath);
+		foreach(new \RecursiveIteratorIterator($phar) as $file => $finfo){
 			/** @var \PharFileInfo $finfo */
 			if($finfo->getSize() > (1024 * 512)){
 				yield "Compressing " . $finfo->getFilename();
@@ -116,7 +119,6 @@ function buildPhar(string $pharPath, string $basePath, array $includedPaths, arr
 			}
 		}
 	}
-	$phar->stopBuffering();
 
 	yield "Done in " . round(microtime(true) - $start, 3) . "s";
 }
