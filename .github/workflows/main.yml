@@ -20,7 +20,7 @@ jobs:
           - "8.3"
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup PHP
         uses: pmmp/setup-php-action@3.2.0
@@ -31,7 +31,7 @@ jobs:
 
       - name: Restore Composer package cache
         id: composer-cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: "~/.cache/composer"
           key: "php-${{ matrix.php }}-composer-${{ hashFiles('**/composer.json') }}"
