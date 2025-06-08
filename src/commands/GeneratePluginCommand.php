@@ -25,13 +25,12 @@ use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\utils\TextFormat;
 use function count;
 use function ctype_digit;
-use function fclose;
 use function file_exists;
+use function file_get_contents;
 use function file_put_contents;
 use function mkdir;
 use function preg_match;
 use function str_replace;
-use function stream_get_contents;
 use function yaml_emit;
 use const DIRECTORY_SEPARATOR;
 
@@ -70,36 +69,30 @@ class GeneratePluginCommand extends DevToolsCommand{
 
 		mkdir($rootDirectory . $namespacePath, 0755, true); //create all the needed directories
 
-		$mainPhpTemplate = $this->getOwningPlugin()->getResource("plugin_skeleton/Main.php");
+		$mainPhpTemplate = file_get_contents($this->getOwningPlugin()->getResourcePath("plugin_skeleton/Main.php"));
 
-		try{
-			if($mainPhpTemplate === null){
-				$sender->sendMessage(TextFormat::RED . "Error: missing template files");
-				return true;
-			}
-
-			$manifest = [
-				"name" => $pluginName,
-				"version" => "0.0.1",
-				"main" => $namespace . "\\Main",
-				"api" => $this->getOwningPlugin()->getServer()->getApiVersion(),
-				"src-namespace-prefix" => $namespace
-			];
-
-			file_put_contents($rootDirectory . "plugin.yml", yaml_emit($manifest));
-
-			file_put_contents($rootDirectory . $namespacePath . "Main.php", str_replace(
-				"#%{Namespace}", "namespace " . $namespace . ";",
-				stream_get_contents($mainPhpTemplate)
-			));
-
-			$sender->sendMessage("Created skeleton plugin $pluginName in " . $rootDirectory);
+		if($mainPhpTemplate === false){
+			$sender->sendMessage(TextFormat::RED . "Error: missing template files");
 			return true;
-		}finally{
-			if($mainPhpTemplate !== null){
-				fclose($mainPhpTemplate);
-			}
 		}
+
+		$manifest = [
+			"name" => $pluginName,
+			"version" => "0.0.1",
+			"main" => $namespace . "\\Main",
+			"api" => $this->getOwningPlugin()->getServer()->getApiVersion(),
+			"src-namespace-prefix" => $namespace
+		];
+
+		file_put_contents($rootDirectory . "plugin.yml", yaml_emit($manifest));
+
+		file_put_contents($rootDirectory . $namespacePath . "Main.php", str_replace(
+			"#%{Namespace}", "namespace " . $namespace . ";",
+			$mainPhpTemplate
+		));
+
+		$sender->sendMessage("Created skeleton plugin $pluginName in " . $rootDirectory);
+		return true;
 	}
 
 	private static function correctNamespacePart(string $part) : string{

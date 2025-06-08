@@ -64,11 +64,6 @@ class ExtractPluginCommand extends DevToolsCommand{
 		}
 		$description = $plugin->getDescription();
 
-		if(!($plugin->getPluginLoader() instanceof PharPluginLoader)){
-			$sender->sendMessage(TextFormat::RED . "Plugin " . $description->getName() . " is not in Phar structure.");
-			return true;
-		}
-
 		$folderPath = $this->getOwningPlugin()->getDataFolder() . DIRECTORY_SEPARATOR . $description->getName() . "_v" . $description->getVersion() . "/";
 		if(file_exists($folderPath)){
 			$sender->sendMessage("Plugin already exists, overwriting...");
@@ -76,10 +71,7 @@ class ExtractPluginCommand extends DevToolsCommand{
 			@mkdir($folderPath);
 		}
 
-		$reflection = new \ReflectionClass(PluginBase::class);
-		$file = $reflection->getProperty("file");
-		$file->setAccessible(true);
-		$pharPath = str_replace("\\", "/", rtrim($file->getValue($plugin), "\\/"));
+		$pharPath = str_replace("\\", "/", rtrim($plugin->getFile(), "\\/"));
 
 		foreach(new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($pharPath)) as $fInfo){
 			$path = $fInfo->getPathname();
