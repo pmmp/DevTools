@@ -35,7 +35,6 @@ use pocketmine\player\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginBase;
 use pocketmine\Server;
-use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat;
 use pocketmine\utils\Utils;
 use function assert;
@@ -45,6 +44,7 @@ use function date;
 use function generatePluginMetadataFromYml;
 use function implode;
 use function ini_get;
+use function is_dir;
 use function ksort;
 use function php_ini_loaded_file;
 use function realpath;
@@ -75,7 +75,6 @@ class DevTools extends PluginBase{
 		$map->register("devtools", new ExtractPluginCommand($this));
 		$map->register("devtools", new GeneratePluginCommand($this));
 
-		$this->getServer()->getPluginManager()->registerInterface(new FolderPluginLoader($this->getServer()->getLoader()));
 		$this->getLogger()->info("Registered folder plugin loader");
 	}
 
@@ -87,7 +86,7 @@ class DevTools extends PluginBase{
 					$succeeded = $failed = [];
 					$skipped = 0;
 					foreach($plugins as $plugin){
-						if(!$plugin->getPluginLoader() instanceof FolderPluginLoader){
+						if(!self::isFolderPlugin($plugin)){
 							$skipped++;
 							continue;
 						}
@@ -254,17 +253,14 @@ class DevTools extends PluginBase{
 		}
 		$description = $plugin->getDescription();
 
-		if(!($plugin->getPluginLoader() instanceof FolderPluginLoader)){
+		if(!self::isFolderPlugin($plugin)){
 			$sender->sendMessage(TextFormat::RED . "Plugin " . $description->getName() . " is not in folder structure.");
 			return false;
 		}
 
 		$pharPath = $this->getDataFolder() . $description->getName() . "_v" . $description->getVersion() . ".phar";
 
-		$reflection = new \ReflectionClass(PluginBase::class);
-		$file = $reflection->getProperty("file");
-		$file->setAccessible(true);
-		$pfile = rtrim($file->getValue($plugin), '/');
+		$pfile = rtrim($plugin->getFile(), '/');
 		$filePath = realpath($pfile);
 		if($filePath === false){
 			$sender->sendMessage(TextFormat::RED . "Plugin " . $description->getName() . " not found at $pfile (maybe deleted?)");
@@ -405,5 +401,10 @@ class DevTools extends PluginBase{
 		}
 
 		return true;
+	}
+
+	private static function isFolderPlugin(Plugin $plugin) : bool{
+		$realPath = realpath($plugin->getFile());
+		return $realPath !== false && is_dir($realPath);
 	}
 }
