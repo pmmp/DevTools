@@ -41,7 +41,7 @@ jobs:
       - name: Install PHPStan Composer dependencies
         working-directory: phpstan
         #old PM has security issues, we don't care because it's only for static analysis
-        run: composer install --prefer-dist --no-interaction --no-security-blocking
+        run: composer update --prefer-dist --no-interaction --no-security-blocking
 
       - name: Run PHPStan
         working-directory: phpstan
