@@ -40,7 +40,8 @@ jobs:
 
       - name: Install PHPStan Composer dependencies
         working-directory: phpstan
-        run: composer install --prefer-dist --no-interaction
+        #old PM has security issues, we don't care because it's only for static analysis
+        run: composer install --prefer-dist --no-interaction --no-security-blocking
 
       - name: Run PHPStan
         working-directory: phpstan
